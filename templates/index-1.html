@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · Solvestreak{% endblock %}
+{% block page_title %}Your Coding Progress{% endblock %}
+{% block page_subtitle %}Dashboard / Weak topics{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div>
+        <span class="badge badge-success">AI Analysis Ready</span>
+        <h2 class="hero-title">Your Coding Progress</h2>
+        <p class="lede">Focus on the areas where you have the most room to improve.</p>
+    </div>
+</section>
+
+{% if user_streak and user_streak.at_risk %}
+<div class="flash flash-error" style="margin-bottom: 1rem;">
+    <i data-lucide="flame"></i>
+    <span>Your {{ user_streak.current }}-day streak is at risk -- generate something today to keep it alive.</span>
+</div>
+{% endif %}
+
+<section class="stat-row" aria-label="Your progress">
+    <article class="stat-card">
+        <p class="stat-label">Current Streak</p>
+        <p class="stat-value">{{ user_streak.current if user_streak else 0 }}</p>
+    </article>
+    <article class="stat-card">
+        <p class="stat-label">Longest Streak</p>
+        <p class="stat-value">{{ user_streak.longest if user_streak else 0 }}</p>
+    </article>
+    <article class="stat-card">
+        <p class="stat-label">Today's Generations</p>
+        <p class="stat-value stat-value-sm">
+            {% if is_admin_unlimited %}Unlimited{% else %}{{ today_generations }} / {{ daily_generations_per_user }}{% endif %}
+        </p>
+    </article>
+    <article class="stat-card">
+        <p class="stat-label">Needs Most Practice</p>
+        <p class="stat-value stat-value-sm">{{ weak_topic_frequency[0][0] if weak_topic_frequency else "Not enough data yet" }}</p>
+    </article>
+    <article class="stat-card">
+        <p class="stat-label">Fastest Mock Test</p>
+        <p class="stat-value stat-value-sm">
+            {% if best_mock_test %}{{ best_mock_test.elapsed_seconds // 60 }}m {{ '%02d'|format(best_mock_test.elapsed_seconds % 60) }}s{% else %}No timed attempt yet{% endif %}
+        </p>
+    </article>
+</section>
+
+{% if weak_topics %}
+<h3 style="margin-top: 1.5rem;">Weak Topics</h3>
+<section class="stat-row" aria-label="Session stats">
+    <article class="stat-card">
+        <p class="stat-label">Weak Topics</p>
+        <p class="stat-value">{{ weak_topics|length }}</p>
+    </article>
+    <article class="stat-card">
+        <p class="stat-label">Topics Tracked</p>
+        <p class="stat-value">{{ topics_tracked }}</p>
+    </article>
+    <article class="stat-card">
+        <p class="stat-label">Practice Focus</p>
+        <p class="stat-value stat-value-sm">{{ weak_topics[0] }}</p>
+    </article>
+    <article class="stat-card">
+        <p class="stat-label">Last Synced</p>
+        <p class="stat-value stat-value-sm">This visit</p>
+    </article>
+</section>
+
+<section id="focus-areas">
+    <div class="section-head">
+        <h3>Focus Areas</h3>
+        <p class="muted">Ranked from your LeetCode solve history. No invented scores — just where to start.</p>
+    </div>
+
+    <div class="topic-grid">
+        {% for topic in weak_topics %}
+        <article class="card topic-card">
+            <div class="topic-card-top">
+                <span class="rank">{{ '%02d'|format(loop.index) }}</span>
+                <span class="badge badge-warning">Needs Practice</span>
+            </div>
+            <div class="topic-card-icon" aria-hidden="true">
+                <i data-lucide="target"></i>
+            </div>
+            <h3>{{ topic }}</h3>
+            <p class="muted">Build stronger pattern recognition.</p>
+            <div class="progress-track" aria-hidden="true">
+                <span class="progress-fill"></span>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+{% else %}
+<div class="empty-state card">
+    <i data-lucide="inbox"></i>
+    {% if leetcode_username_missing %}
+    <h3>Add your LeetCode username to get started.</h3>
+    <p class="muted">Solvestreak reads your LeetCode profile to find your weak topics. Add your username in Settings.</p>
+    <a class="btn btn-primary" href="/settings">Go to Settings <i data-lucide="arrow-right"></i></a>
+    {% else %}
+    <h3>No weak topics detected yet.</h3>
+    <p class="muted">Once your LeetCode history is available, Solvestreak will highlight where to practice.</p>
+    {% endif %}
+</div>
+{% endif %}
+
+{% if weak_topic_frequency|length > 1 %}
+<section style="margin-top: 1.5rem;">
+    <div class="section-head">
+        <h3>Where You've Needed the Most Practice</h3>
+        <p class="muted">Topics that have shown up most often in your weak-topic picks across every past run.</p>
+    </div>
+    <div class="card" style="padding: 1.1rem 1.3rem;">
+        {% for topic, count in weak_topic_frequency %}
+        <div style="display: flex; justify-content: space-between; align-items: center; {% if not loop.last %}margin-bottom: 0.6rem;{% endif %}">
+            <span>{{ topic }}</span>
+            <span class="badge">{{ count }} run{{ "s" if count != 1 else "" }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    <a class="btn btn-secondary" href="/history" style="margin-top: 1rem;">View Full History <i data-lucide="arrow-right"></i></a>
+</section>
+{% endif %}
+
+{% if weak_topics %}
+<div class="cta-row">
+    <form action="/notes" method="post" class="js-loading-form" data-loading-text="Generating topic notes...">
+        <button type="submit" class="btn btn-primary">
+            Build My Study Session
+            <i data-lucide="arrow-right"></i>
+        </button>
+    </form>
+    <a class="btn btn-secondary" href="/deadline">Create Deadline Plan</a>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Solutions · Solvestreak{% endblock %}
+{% block page_title %}Solutions{% endblock %}
+{% block page_subtitle %}Study flow / Developer walkthrough{% endblock %}
+
+{% block header_actions %}
+{% if run_id %}
+<a class="btn btn-secondary btn-sm" href="{{ url_for('history_pdf', run_id=run_id) }}">
+    <i data-lucide="download"></i>
+    Download PDF
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+{% set items = solutions.solutions if solutions and solutions.solutions else [] %}
+
+{% if items %}
+<div class="stack">
+    {% for s in items %}
+    {% set prior = prior_grades.get(s.id) if prior_grades else None %}
+    <article class="card solution-card" data-problem-id="{{ s.id }}" data-run-id="{{ run_id or '' }}" data-topic="{{ topic_by_id.get(s.id, '') if topic_by_id else '' }}">
+        <div class="solution-head">
+            <p class="rank">Problem {{ '%02d'|format(s.id) }}</p>
+            {% if topic_by_id and topic_by_id.get(s.id) %}<span class="badge">{{ topic_by_id[s.id] }}</span>{% endif %}
+        </div>
+        <div class="solution-grid">
+            <div>
+                <p class="eyebrow">Approach</p>
+                <p class="statement">{{ s.approach }}</p>
+                <p class="eyebrow">Complexity</p>
+                <p class="complexity">{{ s.complexity }}</p>
+            </div>
+            <div class="code-block">
+                <div class="code-toolbar">
+                    <span>Code</span>
+                    <button type="button" class="btn btn-ghost btn-sm" data-copy aria-label="Copy code">
+                        <i data-lucide="copy"></i>
+                        Copy
+                    </button>
+                </div>
+                <pre><code>{{ s.code }}</code></pre>
+            </div>
+        </div>
+        {% if run_id %}
+        <div class="grade-row">
+            <span class="muted grade-label">Did you get this right?</span>
+            <button type="button" class="btn btn-sm grade-btn grade-btn-correct {% if prior == True %}is-selected{% endif %}" data-grade="correct">
+                <i data-lucide="check"></i>
+                Got it right
+            </button>
+            <button type="button" class="btn btn-sm grade-btn grade-btn-incorrect {% if prior == False %}is-selected{% endif %}" data-grade="incorrect">
+                <i data-lucide="x"></i>
+                Got it wrong
+            </button>
+            <span class="grade-status muted" data-grade-status>{% if prior is not none %}Saved{% endif %}</span>
+            <button
+                type="button"
+                class="btn btn-ghost btn-sm flag-btn"
+                data-flag-btn
+                data-flag-context="Solutions - Problem {{ '%02d'|format(s.id) }}{% if topic_by_id and topic_by_id.get(s.id) %} ({{ topic_by_id[s.id] }}){% endif %}, run #{{ run_id }}"
+            >
+                <i data-lucide="flag"></i>
+                Flag this question
+            </button>
+        </div>
+        {% endif %}
+    </article>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state card">
+    <i data-lucide="code-2"></i>
+    <h3>No solutions yet.</h3>
+    <p class="muted">Complete a practice paper first, then generate walkthroughs here.</p>
+    <a class="btn btn-primary" href="/paper">Go to Practice Paper</a>
+</div>
+{% endif %}
+{% endblock %}

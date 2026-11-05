@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}Settings · Solvestreak{% endblock %}
+{% block page_title %}Settings{% endblock %}
+{% block page_subtitle %}Account / Your LeetCode profile{% endblock %}
+
+{% block content %}
+{% set palettes = [
+    ("classic", "Liquid Rosé", ["#FFF9FC", "#F8D5E3", "#F29DBD", "#D94F87", "#942D5B"]),
+    ("galaxy", "Galaxy", ["#080D1B", "#17233C", "#4D8DFF", "#54E6E8", "#A77AFF"]),
+    ("sunset-sorbet", "Sunset Sorbet", ["#30202B", "#EF755F", "#FFA66B", "#FFD0B8", "#F4B5C9"]),
+    ("lavender-nebula", "Lavender Nebula", ["#191528", "#7655C9", "#BB8FE8", "#D8BDF5", "#F2C6E3"]),
+    ("electric-grape", "Electric Grape", ["#21152E", "#6426A8", "#9B62FF", "#F05BCB", "#D9B7FF"]),
+    ("mystic-lagoon", "Mystic Lagoon", ["#101B2C", "#102D35", "#087F8C", "#52E5E0", "#B1F1E8"]),
+    ("prisme", "Prismé", ["#35283D", "#CDB9F4", "#BBDCF5", "#AEE8D9", "#F4C5DE"]),
+    ("luminous-grove", "Luminous Grove", ["#07130F", "#064E3B", "#059669", "#A7F3D0", "#F5F8F4"]),
+    ("vanilla-luxe", "Vanilla Luxe", ["#FFFBF3", "#F3E6D0", "#D9B98A", "#B9803F", "#2E2016"]),
+    ("obsidian-gold", "Obsidian Gold", ["#0D0C0A", "#3A3A3C", "#8C6A1E", "#B8912F", "#F6ECD2"]),
+    ("buttercup-daydream", "Buttercup Daydream", ["#FFFFFF", "#FFF6DC", "#FFD9B3", "#F5D879", "#D9A441"]),
+    ("crema-luxe", "Crema Luxe", ["#F8F5EF", "#F0EAE0", "#E5D2BB", "#98704D", "#120D0A"]),
+    ("plum-majesty", "Plum Majesty", ["#F8F3F6", "#F0E7ED", "#D5B7C7", "#85546F", "#130D14"]),
+    ("blue-moon", "Blue Moon", ["#F2F4F9", "#E8ECF4", "#BCC5DC", "#7388B5", "#0C1020"]),
+    ("moonstone-garden", "Moonstone Garden", ["#F4F5ED", "#E9EDDF", "#BCC6A8", "#687B55", "#0C120D"]),
+    ("coral-serenade", "Coral Serenade", ["#FFF5EF", "#FCEAE1", "#F6C6B5", "#E58F7C", "#1B1212"]),
+    ("citrus-reverie", "Citrus Reverie", ["#FBF8E9", "#F4F0D9", "#E9D991", "#A3A978", "#14170F"]),
+    ("pistachio", "Pistachio", ["#F0EFE7", "#F4EED9", "#C7BB8B", "#56714A", "#1C1E1F"]),
+] %}
+<div class="settings-layout">
+    <div class="settings-col-main">
+        <section class="card form-card">
+            <div class="field">
+                <label>Signed in as</label>
+                <p class="helper" style="margin-top: 0.3rem;">
+                    {{ current_user.name }}{% if current_user.email %} &middot; {{ current_user.email }}{% endif %}
+                </p>
+            </div>
+
+            <form method="post">
+                <div class="field">
+                    <label for="leetcode_username">LeetCode username</label>
+                    <input
+                        type="text"
+                        id="leetcode_username"
+                        name="leetcode_username"
+                        value="{{ leetcode_username }}"
+                        placeholder="Type Here..."
+                        autocomplete="off"
+                    >
+                    <p class="helper">This is the LeetCode profile Solvestreak reads to find your weak topics. Find it in the URL of your LeetCode profile page: leetcode.com/u/<strong>this-part</strong>/</p>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    Save
+                    <i data-lucide="check"></i>
+                </button>
+                {% if saved %}
+                    <span class="helper" style="margin-left: 0.75rem;">Saved.</span>
+                {% endif %}
+            </form>
+        </section>
+
+        <section class="card form-card" style="margin-top: 1rem;">
+            <div class="field">
+                <label>Auto-run time</label>
+                <p class="helper" style="margin-top: 0.3rem;">
+                    Solvestreak can refresh your weak topics and generate a fresh notes/paper/solutions PDF on its own every day, without you opening the app.
+                </p>
+            </div>
+
+            {% if is_admin %}
+            <form method="post" action="{{ url_for('settings_schedule') }}">
+                <div class="field">
+                    <label for="daily_run_time">Run automatically every day at (applies to everyone)</label>
+                    <input
+                        type="time"
+                        id="daily_run_time"
+                        name="daily_run_time"
+                        value="{{ daily_run_time }}"
+                        required
+                    >
+                    <p class="helper">This is one shared schedule for the whole app, not just your account -- every signed-in person with a LeetCode username set gets their daily run at this same time. It changes the Windows Scheduled Task ("SolvestreakDaily") behind the scenes — only works while Solvestreak is installed on this computer and your laptop is on and logged in at that time.</p>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    Save time
+                    <i data-lucide="alarm-clock"></i>
+                </button>
+            </form>
+            {% else %}
+            <div class="field">
+                <p>Your daily automation is at: <strong>{{ daily_run_time }}</strong></p>
+                <p class="helper">This time applies to the whole app and is set by the admin.</p>
+            </div>
+            {% endif %}
+        </section>
+
+        <section class="card form-card" style="margin-top: 1rem;">
+            <div class="field">
+                <label>Session</label>
+                <p class="helper" style="margin-top: 0.3rem; margin-bottom: 0.75rem;">
+                    You'll stay signed in on this device until you sign out below.
+                </p>
+            </div>
+            <a class="btn btn-secondary" href="{{ url_for('auth.logout') }}">
+                Sign out
+                <i data-lucide="log-out"></i>
+            </a>
+        </section>
+    </div>
+
+    <div class="settings-col-side">
+        <section class="card form-card">
+            <div class="field">
+                <label>Colour theme</label>
+                <p class="helper" style="margin-top: 0.3rem; margin-bottom: 0.25rem;">
+                    Pick the palette Solvestreak uses -- applies instantly and works with both light and dark mode. "{{ palettes[0][1] }}" is the original theme.
+                </p>
+            </div>
+            <div class="theme-swatch-grid">
+                {% for value, name, colors in palettes %}
+                <button type="button" class="theme-swatch" data-palette-option="{{ value }}" aria-pressed="{{ 'true' if value == (current_user.palette or 'blue-moon') else 'false' }}">
+                    <span class="theme-swatch-check" aria-hidden="true"><i data-lucide="check"></i></span>
+                    <span class="theme-swatch-preview" aria-hidden="true">
+                        {% for c in colors %}<span style="background: {{ c }};"></span>{% endfor %}
+                    </span>
+                    <span class="theme-swatch-name">{{ name }}</span>
+                </button>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}

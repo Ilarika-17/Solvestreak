@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}{{ list_title }} · Solvestreak{% endblock %}
+{% block page_title %}{{ list_title }}{% endblock %}
+{% block page_subtitle %}{{ list_subtitle }}{% endblock %}
+
+{% block header_actions %}
+<a class="btn btn-secondary btn-sm" href="/history">
+    <i data-lucide="arrow-left"></i>
+    Back to History
+</a>
+{% endblock %}
+
+{% block content %}
+{% if runs %}
+<div class="stack">
+    {% for run in runs %}
+    <article class="card problem-card">
+        <header class="problem-head">
+            <span class="rank">Session #{{ run.id }}</span>
+            <div class="meta-row">
+                {% for topic in run.weak_topics %}
+                <span class="badge">{{ topic }}</span>
+                {% endfor %}
+            </div>
+        </header>
+        <p class="muted">{{ run.created_at }}</p>
+        <div class="cta-row">
+            <a class="btn btn-primary btn-sm" href="/history/{{ run.id }}/pdf">
+                <i data-lucide="download"></i>
+                Download PDF
+            </a>
+            <form method="POST" action="{{ url_for(delete_endpoint, run_id=run.id) }}" class="delete-form" onsubmit="return confirm('Delete this from your history? This can\'t be undone.');">
+                <button type="submit" class="btn btn-danger btn-sm">
+                    <i data-lucide="trash-2"></i>
+                    Delete
+                </button>
+            </form>
+        </div>
+    </article>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state card">
+    <i data-lucide="history"></i>
+    <h3>{{ empty_title }}</h3>
+    <p class="muted">{{ empty_message }}</p>
+    <a class="btn btn-primary" href="/">Go to Dashboard</a>
+</div>
+{% endif %}
+{% endblock %}

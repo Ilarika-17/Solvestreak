@@ -1,0 +1,2316 @@
+/* ---- Aurum & Emerald design system ----
+   Shared tokens first (theme-independent: emerald/gold brand palette,
+   typography), then the light/dark surface tokens that actually flip. The
+   sidebar follows the theme here (cream in light, charcoal in dark) rather
+   than staying permanently dark. */
+
+:root,
+:root[data-theme="light"] {
+    --bg: #f0efe6;
+    --surface: #ffffff;
+    --elevated: #e9e6d8;
+    --card: #fffdf8;
+    --text: #3a362f;
+    --heading: #25272b;
+    --muted: #6b6558;
+    --border: #e3ddc9;
+    --accent: #075640;
+    --accent-hover: #0a6b50;
+    --accent-strong: #075640;
+    --accent-soft: #e3ede8;
+    --accent-contrast: #ffffff;
+    --btn-primary-bg: linear-gradient(135deg, #0a6b50, #075640);
+    --btn-primary-bg-hover: linear-gradient(135deg, #0c7a5b, #0a6b50);
+    --hover-surface: #e9e6d8;
+    --selected-bg: #dde8e2;
+    --icon-bg: #e3ede8;
+    --icon-stroke: #075640;
+    --badge-text: #075640;
+    --emerald-soft: #e3ede8;
+    --gold-soft: #f4ecd8;
+    --gold-text: #8a6d1f;
+    --warn-soft: #f6e4e0;
+    --warn-text: #9a4332;
+    --code-bg: #25272b;
+    --code-text: #f0efe6;
+    --code-toolbar-text: #a79f8c;
+    --code-toolbar-border: rgba(255, 255, 255, 0.08);
+    --shadow: 0 2px 10px rgba(37, 39, 43, 0.08);
+    --radius: 16px;
+    /* Glass-liquid pass: frosted-surface tokens. --glass-bg is the
+       translucent fill cards/modals/the dock sit on; --glass-bg-strong is
+       for anything that needs to stay readable over busy content (modals).
+       The border uses two colors because it's built as a diagonal
+       light-catching gradient, not a flat line -- see .glass-surface. */
+    --glass-bg: rgba(255, 253, 248, 0.6);
+    --glass-bg-strong: rgba(255, 253, 248, 0.82);
+    --glass-border-a: rgba(255, 255, 255, 0.75);
+    --glass-border-b: rgba(198, 167, 94, 0.4);
+    --glass-highlight: rgba(255, 255, 255, 0.55);
+    --glass-shadow: 0 10px 34px rgba(37, 39, 43, 0.14), 0 2px 10px rgba(37, 39, 43, 0.07);
+    --glass-blur: 18px;
+    --topbar: 72px;
+}
+
+:root[data-theme="dark"] {
+    --bg: #1c1e21;
+    --surface: #25272b;
+    --elevated: #303237;
+    --card: #25272b;
+    --text: #e6e3d9;
+    --heading: #f0efe6;
+    --muted: #a39d8f;
+    --label-muted: #a39d8f;
+    --border: #35373c;
+    --input-border: #3c3e44;
+    --accent: #1f8565;
+    --accent-hover: #27996f;
+    --accent-strong: #27996f;
+    --icon-stroke: #3bb085;
+    --accent-soft: rgba(31, 133, 101, 0.2);
+    --accent-contrast: #f0efe6;
+    --btn-primary-bg: linear-gradient(135deg, #1f8565, #146449);
+    --btn-primary-bg-hover: linear-gradient(135deg, #27996f, #1f8565);
+    --hover-surface: rgba(240, 239, 230, 0.05);
+    --selected-bg: rgba(31, 133, 101, 0.18);
+    --icon-bg: rgba(31, 133, 101, 0.16);
+    --badge-bg: rgba(31, 133, 101, 0.18);
+    --badge-text: #a7e2c9;
+    --emerald-soft: rgba(31, 133, 101, 0.18);
+    --gold-soft: rgba(198, 167, 94, 0.18);
+    --gold-text: #d9bd79;
+    --warn-soft: rgba(201, 108, 89, 0.16);
+    --warn-text: #e3a391;
+    --progress-track: #303237;
+    --modal-bg: #25272b;
+    --code-bg: #15171a;
+    --code-text: #e6e3d9;
+    --code-toolbar-text: #a39d8f;
+    --code-toolbar-border: rgba(255, 255, 255, 0.08);
+    --shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    --glass-bg: rgba(37, 39, 43, 0.55);
+    --glass-bg-strong: rgba(28, 30, 33, 0.82);
+    --glass-border-a: rgba(255, 255, 255, 0.16);
+    --glass-border-b: rgba(198, 167, 94, 0.35);
+    --glass-highlight: rgba(255, 255, 255, 0.14);
+    --glass-shadow: 0 12px 36px rgba(0, 0, 0, 0.55), 0 2px 10px rgba(0, 0, 0, 0.35);
+    --glass-blur: 18px;
+}
+
+:root {
+    /* Brand palette -- same in both themes, used for accents and badges.
+       Named after the Aurum & Emerald design brief: deep emerald + rich
+       champagne gold + charcoal + warm cream. Gold is an accent only --
+       never a dominant fill (see brief section 2). */
+    --emerald: #075640;
+    --emerald-2: #123f34;
+    --gold: #c6a75e;
+    --gold-muted: #a88c4f;
+    --charcoal: #25272b;
+    --warn: #c0695f;
+
+    /* Glass-liquid pass: Manrope is now the one UI typeface everywhere
+       (headings, body, numbers) -- no more serif/body split. Weight carries
+       the "premium" feel instead of a type-family contrast. */
+    --font-heading: "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-body: "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-number: "Manrope", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+/* ================= Glass-liquid 3D pass =================
+   Two reusable materials, layered on top of the existing Aurum & Emerald
+   tokens rather than replacing them:
+
+   .glass-surface  -- frosted/translucent panel (cards, modals, the dock
+                      container, the topbar). backdrop-filter blur over a
+                      translucent fill, a two-layer gradient border for a
+                      light-catching edge instead of a flat line, and a
+                      @supports fallback for browsers without backdrop-filter.
+
+   .liquid-glass   -- the small-control material from the amber/chrome
+                      reference images: a rounded capsule with a slow
+                      rotating marbled emerald/gold swirl behind the icon
+                      (::before, transform-only so it stays compositor-
+                      cheap) and a glossy top highlight that also carries
+                      the cursor-follow glow (::after). Used on buttons,
+                      dock icons, and the streak ring -- anywhere the brief
+                      calls for the "liquid glass capsule", not just a
+                      blurred rectangle. */
+.glass-surface,
+.card,
+.stat-card,
+.modal-card {
+    position: relative;
+    background: var(--glass-bg);
+    border: 1px solid transparent;
+    background-clip: padding-box, border-box;
+    background-image:
+        linear-gradient(var(--glass-bg), var(--glass-bg)),
+        linear-gradient(135deg, var(--glass-border-a), var(--glass-border-b) 55%, transparent);
+    background-origin: border-box;
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    box-shadow: var(--glass-shadow);
+}
+
+/* No backdrop-filter support: fall back to a more opaque flat fill so text
+   stays legible instead of sitting on a half-transparent, unblurred panel. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .glass-surface,
+    .card,
+    .stat-card,
+    .modal-card {
+        background: var(--glass-bg-strong);
+        background-image: none;
+        border-color: var(--border);
+    }
+}
+
+/* .btn-primary and .hero-streak-ring get the same material without needing
+   the class physically in every template that uses them -- they're unioned
+   into these selectors directly instead. */
+.liquid-glass,
+.btn-primary,
+.hero-streak-ring {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: blur(10px) saturate(150%);
+    backdrop-filter: blur(10px) saturate(150%);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .liquid-glass,
+    .btn-primary,
+    .hero-streak-ring {
+        background: var(--glass-bg-strong);
+    }
+}
+
+/* The marbled swirl: a blurred conic gradient, oversized and centered, that
+   slowly rotates. Rotating via `transform` (not animating the gradient
+   itself) keeps this compositor-only, per the performance constraint. */
+.liquid-glass::before,
+.btn-primary::before,
+.hero-streak-ring::before {
+    content: "";
+    position: absolute;
+    inset: -60%;
+    z-index: 0;
+    background: conic-gradient(
+        from 0deg,
+        var(--emerald) 0%,
+        var(--gold-muted) 22%,
+        var(--emerald-2) 45%,
+        var(--gold) 68%,
+        var(--emerald) 100%
+    );
+    filter: blur(9px);
+    opacity: 0.5;
+    animation: liquid-swirl-spin 16s linear infinite;
+    pointer-events: none;
+}
+
+:root[data-theme="dark"] .liquid-glass::before,
+:root[data-theme="dark"] .btn-primary::before,
+:root[data-theme="dark"] .hero-streak-ring::before {
+    opacity: 0.4;
+}
+
+/* Glossy top highlight + the cursor-follow glow, combined on one layer:
+   the first background is a static arc of light (the convex "glass" read),
+   the second is a radial highlight pinned to --mx/--my that only shows on
+   hover/focus -- reusing the same vars app.js already writes. */
+.liquid-glass::after,
+.btn-primary::after,
+.hero-streak-ring::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background:
+        radial-gradient(circle 70px at var(--mx, 50%) var(--my, 20%), rgba(255, 255, 255, 0.5), transparent 72%),
+        linear-gradient(180deg, var(--glass-highlight) 0%, transparent 55%);
+    opacity: 0;
+    transition: opacity 280ms ease;
+    pointer-events: none;
+}
+
+.liquid-glass:hover::after,
+.liquid-glass:focus-visible::after,
+.btn-primary:hover::after,
+.btn-primary:focus-visible::after {
+    opacity: 1;
+}
+
+/* The streak ring is a status badge, not something anyone hovers -- its
+   glossy highlight stays on permanently instead of being hover-gated. */
+.hero-streak-ring::after {
+    opacity: 0.85;
+}
+
+.liquid-glass > *,
+.btn-primary > *,
+.hero-streak-ring > * {
+    position: relative;
+    z-index: 2;
+}
+
+@keyframes liquid-swirl-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .liquid-glass::before,
+    .btn-primary::before,
+    .hero-streak-ring::before {
+        animation: none;
+    }
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    color: var(--text);
+    background: var(--bg);
+    font-family: var(--font-body);
+    line-height: 1.6;
+}
+
+body.nav-open {
+    overflow: hidden;
+}
+
+a {
+    color: var(--accent);
+    text-decoration: none;
+}
+
+img {
+    max-width: 100%;
+}
+
+h1, h2, h3 {
+    margin: 0;
+    font-family: var(--font-heading);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    font-weight: 700;
+    color: var(--heading);
+}
+
+button,
+input,
+textarea {
+    font: inherit;
+}
+
+.app-shell {
+    display: flex;
+    min-height: 100vh;
+}
+
+.muted,
+.breadcrumb,
+.helper {
+    color: var(--muted);
+}
+
+.stat-label,
+.eyebrow {
+    color: var(--label-muted, var(--muted));
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+/* ================= Primary nav dock =================
+   Replaces the old flush sidebar entirely. One <nav class="dock"> that now
+   sits inline in the topbar's title row, right beside the page title (see
+   base.html) -- a normal flex item, not floating above the page. On mobile
+   it detaches into its own floating bottom bar instead (see the 768px media
+   query lower down), since there's no room beside the title on a phone. */
+.dock {
+    position: relative;
+    z-index: 5;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 0.55rem;
+    border-radius: 26px;
+    background: var(--glass-bg);
+    border: 1px solid transparent;
+    background-clip: padding-box, border-box;
+    background-image:
+        linear-gradient(var(--glass-bg), var(--glass-bg)),
+        linear-gradient(160deg, var(--glass-border-a), var(--glass-border-b) 60%, transparent);
+    background-origin: border-box;
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+    box-shadow: var(--glass-shadow);
+    animation: dock-enter 480ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .dock {
+        background: var(--glass-bg-strong);
+        background-image: none;
+        border-color: var(--border);
+    }
+}
+
+@keyframes dock-enter {
+    from {
+        opacity: 0;
+        transform: translateY(-8px) scale(0.94);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dock {
+        animation: none;
+    }
+}
+
+.dock-divider {
+    width: 1px;
+    height: calc(100% - 0.6rem);
+    margin: 0 0.1rem;
+    background: var(--glass-border-b);
+    opacity: 0.6;
+}
+
+.dock-items,
+.dock-utility {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.dock-item {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: none;
+    color: var(--heading);
+    cursor: pointer;
+    /* Magnetic magnification: app.js writes --dock-scale/--dock-lift per
+       item as the cursor approaches (falloff curve by distance). The
+       transition is what makes it feel magnetic rather than a hard snap,
+       and it's what settles it smoothly back to 1/0 on pointer leave. */
+    transform: scale(var(--dock-scale, 1)) translateY(var(--dock-lift, 0px));
+    transition: transform 160ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 160ms ease;
+}
+
+.dock-item i {
+    width: 19px;
+    height: 19px;
+    stroke-width: 2.1;
+}
+
+/* Each dock item is individually wrapped (see base.html) so its tooltip
+   (.dock-tooltip, further down) has an unclipped, correctly-sized
+   positioning context to anchor to -- the item itself can't be that
+   context, since it's already overflow:hidden to clip its own liquid swirl
+   material (see .liquid-glass near the top of this file). */
+.dock-item-wrap {
+    position: relative;
+    display: flex;
+}
+
+.dock-brand {
+    color: var(--gold);
+    margin-bottom: 0.1rem;
+}
+
+.dock-item.is-active {
+    box-shadow: 0 0 0 2px var(--gold), var(--glass-shadow);
+}
+
+.dock-item.is-active::before {
+    opacity: 0.75;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    @media (prefers-reduced-motion: no-preference) {
+        /* A very soft idle breathing glow on the active item -- paused
+           entirely under reduced motion (see the override just below),
+           where it stays a plain static highlight instead. */
+        .dock-item.is-active {
+            animation: dock-active-breathe 3.2s ease-in-out infinite;
+        }
+    }
+}
+
+@keyframes dock-active-breathe {
+    0%, 100% {
+        box-shadow: 0 0 0 2px var(--gold), var(--glass-shadow);
+    }
+    50% {
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--gold) 55%, transparent), var(--glass-shadow);
+    }
+}
+
+/* ---- Dock tooltips (desktop bar only -- mobile bar is thumb-reachable
+   and self-explanatory by icon + position) ----
+   A real child element, not ::after -- .dock-item already spends both its
+   ::before (the rotating liquid swirl) and ::after (the cursor-tracked
+   glass highlight, see the .liquid-glass rules near the top of this file)
+   on the material itself, so a tooltip layered onto either pseudo-element
+   would just collide with it. .dock-tooltip is a plain sibling span written
+   directly in base.html (inside a small .dock-item-wrap per item, since the
+   tooltip also needs an unclipped positioning context -- see
+   .dock-item-wrap above), kept out of layout (position: absolute) and out
+   of the accessibility tree (aria-hidden, since the dock-item itself
+   already carries the real aria-label). */
+.dock-tooltip {
+    display: none;
+}
+
+@media (min-width: 769px) {
+    .dock-tooltip {
+        display: block;
+        position: absolute;
+        top: calc(100% + 14px);
+        left: 50%;
+        z-index: 50;
+        transform: translate(-50%, -6px);
+        padding: 0.4rem 0.65rem;
+        border-radius: 8px;
+        background: var(--heading);
+        color: var(--bg);
+        font-size: 0.78rem;
+        font-weight: 600;
+        white-space: nowrap;
+        box-shadow: var(--shadow);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 150ms ease, transform 150ms ease;
+    }
+
+    /* .dock-tooltip is a sibling of .dock-item (both children of
+       .dock-item-wrap, see base.html), not a descendant -- it needs the
+       adjacent-sibling combinator, not a descendant selector. */
+    .dock-item:hover + .dock-tooltip,
+    .dock-item:focus-visible + .dock-tooltip {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+.account-menu-wrap {
+    position: relative;
+    display: flex;
+    justify-content: center;
+}
+
+.account-menu {
+    /* Opens downward, right-aligned to the trigger -- the account item
+       sits at the row's trailing edge, so a flyout centered under it would
+       run past the viewport's right edge; right: 0 keeps it on-screen the
+       same way the mobile bottom-bar version does (see the 768px media
+       query below). */
+    position: absolute;
+    top: calc(100% + 14px);
+    right: 0;
+    width: 248px;
+    background: var(--glass-bg-strong);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--glass-shadow);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    padding: 0.4rem;
+    z-index: 40;
+    animation: modal-pop 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .account-menu {
+        animation: none;
+    }
+}
+
+.account-menu[hidden] {
+    display: none;
+}
+
+.account-menu-header {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.5rem 0.55rem;
+}
+
+.account-menu-header strong,
+.account-menu-header .muted {
+    display: block;
+}
+
+.account-menu-header .muted {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.78rem;
+}
+
+.account-menu-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0.3rem 0.2rem;
+}
+
+.account-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.55rem 0.6rem;
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 0.85rem;
+    text-decoration: none;
+}
+
+.account-menu-item i {
+    width: 16px;
+    height: 16px;
+    color: var(--muted);
+}
+
+.account-menu-item:hover {
+    background: var(--hover-surface);
+}
+
+.avatar {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 999px;
+    background: var(--icon-bg, var(--accent-soft));
+    color: var(--accent);
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.streak-pill {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.4rem 0.7rem;
+    border-radius: 12px;
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-weight: 650;
+    border: 1px solid var(--border);
+    position: relative;
+}
+
+.streak-pill i {
+    width: 17px;
+    height: 17px;
+    flex-shrink: 0;
+}
+
+.streak-pill-cold {
+    background: var(--elevated, var(--selected-bg));
+    color: var(--muted);
+}
+
+.streak-pill-cold i {
+    stroke: var(--muted);
+}
+
+.streak-pill-hot {
+    background: var(--gold-soft);
+    color: var(--gold-text);
+    border-color: var(--gold);
+}
+
+.streak-pill-hot i {
+    stroke: var(--gold-muted);
+    fill: var(--gold-soft);
+}
+
+.streak-pill-risk {
+    background: var(--warn-soft);
+    color: var(--warn-text);
+    border-color: var(--warn);
+}
+
+.streak-pill-risk i {
+    stroke: var(--warn);
+    fill: var(--warn-soft);
+}
+
+.streak-risk-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--warn);
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+:root[data-theme="light"] .icon-sun,
+:root[data-theme="dark"] .icon-moon {
+    display: none;
+}
+
+.icon-btn:hover {
+    background: var(--hover-surface);
+}
+
+.icon-btn svg,
+.btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+.workspace {
+    flex: 1;
+    min-width: 0;
+}
+
+.topbar {
+    /* The dock now lives inside this row (see .topbar-title-row), so the
+       topbar itself just sticks to the viewport's top edge like any other
+       sticky header -- no extra offset needed to clear a floating dock
+       anymore. The blurred background lives on ::before (below) rather than
+       directly on .topbar: a backdrop-filter on .topbar itself would create
+       a new containing block for any position:fixed descendant, which
+       breaks the mobile dock's "float at the bottom of the viewport"
+       positioning once it's nested in here (it'd anchor to .topbar instead
+       of the viewport). Putting the filter on a separate layer keeps
+       .topbar itself filter-free. */
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    min-height: var(--topbar);
+    padding: 0.85rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.topbar::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: color-mix(in srgb, var(--bg) 86%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.topbar-copy {
+    flex: 1;
+    min-width: 0;
+}
+
+.topbar-title-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+}
+
+.topbar h1 {
+    font-size: 1.2rem;
+    font-family: var(--font-heading);
+    color: var(--heading);
+}
+
+.breadcrumb {
+    margin: 0.15rem 0 0;
+    font-size: 0.82rem;
+}
+
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.icon-btn {
+    display: inline-grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+}
+
+.content {
+    /* The dock is inline in the topbar now, so no extra top clearance is
+       needed on desktop. The mobile media query below swaps this for
+       bottom padding once the dock relocates to a floating bottom bar. */
+    padding: 1.75rem 1.5rem 4rem;
+}
+
+.container {
+    max-width: 1080px;
+    margin: 0 auto;
+}
+
+.fade-in {
+    animation: fade-in 220ms ease;
+}
+
+.hero {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.hero.compact {
+    margin-bottom: 1rem;
+}
+
+.hero-title {
+    margin-top: 0.7rem;
+    font-size: clamp(1.6rem, 3vw, 2.1rem);
+    font-family: var(--font-heading);
+}
+
+.lede {
+    max-width: 42rem;
+    margin: 0.5rem 0 0;
+    color: var(--muted);
+    font-size: 1.02rem;
+}
+
+/* ---- Command Centre hero: personalized greeting + streak orb ---- */
+.hero-command {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    padding: 1.75rem 2rem;
+    margin-bottom: 1.5rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: linear-gradient(135deg, var(--surface), var(--elevated));
+    box-shadow: var(--shadow);
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+}
+
+.hero-command::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 88% 14%, color-mix(in srgb, var(--gold) 16%, transparent), transparent 60%),
+        radial-gradient(circle at 6% 92%, color-mix(in srgb, var(--emerald) 18%, transparent), transparent 55%);
+}
+
+/* ---- Hero atmosphere: drifting glass-shard shapes (brief ref-4) ----
+   Three soft, oversized, blurred blobs behind the greeting -- .hero-command
+   already clips them to its own rounded corners via overflow: hidden, so
+   they can bleed off every edge without a hard cutoff. Each only animates
+   transform (translate/rotate/scale), never the blur radius or position
+   itself, keeping the loop compositor-only even though it runs forever. */
+.hero-atmosphere {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.hero-shard {
+    position: absolute;
+    display: block;
+    border-radius: 42% 58% 55% 45% / 48% 42% 58% 52%;
+    filter: blur(28px);
+    opacity: 0.5;
+    will-change: transform;
+    animation: hero-shard-drift 26s ease-in-out infinite;
+}
+
+.hero-shard-1 {
+    top: -70px;
+    right: 6%;
+    width: 190px;
+    height: 190px;
+    background: radial-gradient(circle at 32% 30%, color-mix(in srgb, var(--gold) 55%, white), transparent 70%);
+    animation-duration: 27s;
+}
+
+.hero-shard-2 {
+    bottom: -60px;
+    left: 16%;
+    width: 150px;
+    height: 150px;
+    background: radial-gradient(circle at 60% 40%, color-mix(in srgb, var(--emerald) 48%, white), transparent 70%);
+    animation-duration: 33s;
+    animation-delay: -9s;
+}
+
+.hero-shard-3 {
+    top: 14%;
+    left: 46%;
+    width: 100px;
+    height: 100px;
+    opacity: 0.32;
+    background: radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--gold) 60%, white), transparent 72%);
+    animation-duration: 20s;
+    animation-delay: -4s;
+}
+
+@keyframes hero-shard-drift {
+    0%,
+    100% {
+        transform: translate(0, 0) rotate(0deg) scale(1);
+    }
+    50% {
+        transform: translate(16px, -12px) rotate(9deg) scale(1.08);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hero-shard {
+        animation: none;
+    }
+}
+
+.hero-greeting .eyebrow {
+    display: inline-block;
+}
+
+.hero-command .hero-title {
+    margin-top: 0.4rem;
+}
+
+.hero-streak-orb {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    flex-shrink: 0;
+}
+
+.hero-streak-ring {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 86px;
+    height: 86px;
+    border-radius: 50%;
+    background: var(--card);
+    border: 2px solid var(--gold);
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--gold) 14%, transparent);
+}
+
+.hero-streak-ring.is-risk {
+    border-color: var(--warn);
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--warn) 16%, transparent);
+}
+
+.hero-streak-ring.is-cold {
+    border-color: var(--border);
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--muted) 10%, transparent);
+}
+
+/* ---- Achievement effect: gold shimmer at a streak milestone ----
+   is-milestone itself (set in index.html for 7/14/30/50/100/150/200/365-day
+   streaks) upgrades the ring's own border/glow to a brighter, steadier
+   gold -- that part holds still and reads fine under reduced motion. The
+   diagonal light sweep is the "shimmer": a brief pass every few seconds,
+   not a constant loop, in keeping with the brief's 10%-glowing-accents
+   rule -- an achievement should catch the eye occasionally, not nag. */
+.hero-streak-ring.is-milestone {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--gold) 26%, transparent), 0 0 22px color-mix(in srgb, var(--gold) 38%, transparent);
+}
+
+.milestone-shimmer {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    overflow: hidden;
+    border-radius: inherit;
+    pointer-events: none;
+}
+
+.milestone-shimmer::before {
+    content: "";
+    position: absolute;
+    top: -25%;
+    left: -70%;
+    width: 45%;
+    height: 150%;
+    background: linear-gradient(100deg, transparent, color-mix(in srgb, var(--gold) 85%, white) 50%, transparent);
+    transform: translateX(0) skewX(-18deg);
+    opacity: 0;
+    animation: milestone-shimmer-sweep 5s ease-in-out infinite;
+}
+
+@keyframes milestone-shimmer-sweep {
+    0% {
+        transform: translateX(0) skewX(-18deg);
+        opacity: 0;
+    }
+    4% {
+        opacity: 0.9;
+    }
+    22% {
+        transform: translateX(420%) skewX(-18deg);
+        opacity: 0;
+    }
+    100% {
+        transform: translateX(420%) skewX(-18deg);
+        opacity: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .milestone-shimmer::before {
+        animation: none;
+        opacity: 0.22;
+        transform: translateX(160%) skewX(-18deg);
+    }
+}
+
+.hero-streak-ring i {
+    position: absolute;
+    top: 13px;
+    width: 22px;
+    height: 22px;
+    stroke: var(--gold-muted);
+    fill: var(--gold-soft);
+}
+
+.hero-streak-ring.is-risk i {
+    stroke: var(--warn);
+    fill: var(--warn-soft);
+}
+
+.hero-streak-ring.is-cold i {
+    stroke: var(--muted);
+    fill: none;
+}
+
+.hero-streak-count {
+    margin-top: 15px;
+    font-family: var(--font-number);
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--heading);
+}
+
+.hero-streak-caption {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+@media (max-width: 768px) {
+    .hero-command {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 1.4rem;
+    }
+
+    .hero-streak-orb {
+        align-self: flex-start;
+    }
+}
+
+.stat-row,
+.topic-grid,
+.solution-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.stat-row {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-bottom: 2rem;
+}
+
+.stat-row-5 {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.topic-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.solution-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    gap: 1.25rem;
+    margin-top: 0.75rem;
+}
+
+.solution-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.grade-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+}
+
+.grade-label {
+    font-size: 0.85rem;
+    margin-right: 0.2rem;
+}
+
+.grade-btn {
+    border: 1px solid var(--glass-border-b);
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: blur(8px) saturate(140%);
+    backdrop-filter: blur(8px) saturate(140%);
+    transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+.grade-btn-correct.is-selected {
+    background: var(--emerald-soft);
+    border-color: var(--accent);
+    color: var(--badge-text);
+}
+
+.grade-btn-incorrect.is-selected {
+    background: var(--warn-soft);
+    border-color: var(--warn);
+    color: var(--warn-text);
+}
+
+.grade-status {
+    font-size: 0.78rem;
+    margin-left: 0.2rem;
+}
+
+.flag-btn {
+    margin-left: auto;
+    color: var(--muted);
+}
+
+.flag-btn:hover {
+    color: var(--warn);
+}
+
+.mock-test-panel {
+    padding: 1.1rem 1.3rem;
+    margin-bottom: 1.5rem;
+}
+
+.mock-test-idle,
+.mock-test-running {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.mock-test-start-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.mock-test-clock {
+    font-family: var(--font-mono);
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.mock-test-clock-overtime {
+    color: var(--warn);
+}
+
+.mock-test-result {
+    margin-top: 0.75rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+
+.mock-test-result-ok {
+    background: var(--emerald-soft);
+    color: var(--badge-text);
+}
+
+.mock-test-result-over {
+    background: var(--warn-soft);
+    color: var(--warn-text);
+}
+
+.card,
+.stat-card {
+    /* background/border/box-shadow now come from the shared glass-surface
+       material (.glass-surface, .card, .stat-card, .modal-card) near the
+       top of this file -- this rule just keeps the corner radius a card
+       owns regardless of its material. */
+    border-radius: var(--radius);
+}
+
+.stat-card,
+.card {
+    padding: 1.15rem 1.2rem;
+}
+
+.card,
+.stat-card {
+    /* app.js drives --tilt-x/--tilt-y continuously while the cursor is over
+       the card (gentle lean toward the pointer, capped to a few degrees)
+       and clears them on pointer-leave -- the transition below is what
+       makes that leave feel like a smooth settle rather than a snap back.
+       --card-lift/--liquid-scale stay as hover-only hooks (see
+       .topic-card:hover etc. below) composed into the same transform so
+       tilt and the lift/scale hover state never fight each other. */
+    transform: perspective(900px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)) translateY(var(--card-lift, 0px)) scale(var(--liquid-scale, 1));
+    transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1), border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.topic-card:hover,
+.problem-card:hover {
+    --card-lift: -2px;
+    border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+}
+
+/* ---- Liquid-wave cursor hover (signature interaction, see app.js) ----
+   A soft radial glow follows the pointer across secondary buttons and
+   every card, giving a subtle "liquid" reaction without heavy filters or
+   JS-driven animation loops. --mx/--my are set by app.js on pointermove;
+   they default to the element's center so keyboard focus still shows a
+   (centered) glow. The glow lives on a ::before placed behind the
+   element's own content via a dedicated stacking context (isolation), so no
+   child markup needs touching. .btn-primary and the dock/streak-ring use
+   the richer .liquid-glass material instead (see near the top of this
+   file) rather than this simpler glow. */
+.btn-secondary,
+.card,
+.stat-card {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+}
+
+.btn-secondary::before,
+.card::before,
+.stat-card::before {
+    content: "";
+    position: absolute;
+    inset: -30%;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0;
+    background: radial-gradient(circle 150px at var(--mx, 50%) var(--my, 50%), var(--liquid-tint, rgba(7, 86, 64, 0.22)), transparent 72%);
+    transition: opacity 320ms ease;
+}
+
+.btn-secondary:hover::before,
+.btn-secondary:focus-visible::before,
+.card:hover::before,
+.card:focus-visible::before,
+.stat-card:hover::before,
+.stat-card:focus-visible::before {
+    opacity: 1;
+}
+
+.btn-secondary:hover {
+    transform: scale(var(--liquid-scale, 1.015));
+}
+
+.btn-primary,
+.btn-secondary {
+    transition: background 160ms ease, transform 220ms cubic-bezier(0.22, 1, 0.36, 1), border-color 160ms ease, box-shadow 160ms ease;
+}
+
+/* ---- Liquid ripple (see app.js) ----
+   A single short-lived span spawned at the pointer's entry point on
+   .liquid-glass/.btn-primary/.btn-secondary/.card/.stat-card/.dock-item,
+   expanding outward and fading -- the "subtle ripple that spreads outward"
+   from the brief. It relies on the host element's own overflow:hidden +
+   isolation (already set above and on .liquid-glass) to stay clipped to
+   the surface it started on, and removes itself via animationend so
+   nothing piles up under a fast-moving cursor. */
+.liquid-ripple {
+    position: absolute;
+    z-index: 2;
+    border-radius: 50%;
+    pointer-events: none;
+    background: radial-gradient(circle, var(--glass-highlight, rgba(255, 255, 255, 0.45)), transparent 72%);
+    transform: scale(0);
+    opacity: 0.85;
+    animation: liquid-ripple-spread 650ms ease-out forwards;
+}
+
+@keyframes liquid-ripple-spread {
+    to {
+        transform: scale(1);
+        opacity: 0;
+    }
+}
+
+.stat-value {
+    margin: 0.2rem 0 0;
+    font-family: var(--font-number);
+    font-size: 1.7rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--heading);
+}
+
+.stat-value-sm {
+    font-size: 1.05rem;
+    line-height: 1.3;
+}
+
+.stat-card-clickable {
+    padding: 0;
+    transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1), border-color 180ms ease;
+}
+
+.stat-card-clickable:hover {
+    --card-lift: -2px;
+    border-color: var(--accent, var(--border));
+}
+
+.stat-card-btn {
+    display: block;
+    width: 100%;
+    padding: 1.15rem 1.2rem;
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+}
+
+.section-head {
+    margin-bottom: 1rem;
+}
+
+.section-head h3 {
+    font-size: clamp(1.2rem, 2.6vw, 1.7rem);
+    font-family: var(--font-heading);
+}
+
+.topic-card-top,
+.problem-head,
+.cta-row,
+.cta-panel,
+.meta-row,
+.code-toolbar,
+.note-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.topic-card-icon {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    margin: 1rem 0 0.7rem;
+    border-radius: 10px;
+    background: var(--icon-bg, var(--hover-surface));
+    color: var(--icon-stroke, var(--accent-strong, var(--accent)));
+}
+
+.rank,
+.complexity {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.18rem 0.55rem;
+    border-radius: 999px;
+    background: var(--badge-bg, var(--selected-bg));
+    color: var(--badge-text);
+    font-size: 0.72rem;
+    font-weight: 650;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.badge-success,
+.badge-easy {
+    background: var(--emerald-soft);
+    color: var(--badge-text);
+}
+
+.badge-warning {
+    background: var(--warn-soft);
+    color: var(--warn-text);
+}
+
+.badge-medium {
+    background: var(--gold-soft);
+    color: var(--gold-text);
+}
+
+.badge-hard {
+    background: var(--warn-soft);
+    color: var(--warn-text);
+}
+
+.progress-track {
+    /* Carved-groove "clay" depth (brief ref-1) instead of a flat bar --
+       an inset shadow reading as a recessed channel, with a thin bright
+       edge along the bottom to suggest it still catches light. */
+    height: 6px;
+    margin-top: 1rem;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--progress-track, var(--border));
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.22), inset 0 -1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.progress-fill {
+    display: block;
+    width: 42%;
+    height: 100%;
+    border-radius: inherit;
+    /* A top-lit gradient rather than a flat fill, so the fill itself reads
+       as a raised, glossy bead sitting inside the recessed track. */
+    background: linear-gradient(180deg, color-mix(in srgb, var(--accent-strong, var(--accent)) 90%, white) 0%, var(--accent-strong, var(--accent)) 55%, color-mix(in srgb, var(--accent-strong, var(--accent)) 82%, black) 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    /* "Progress animations: streaks and completed questions animate
+       smoothly" -- any JS-driven width change now eases instead of
+       snapping. */
+    transition: width 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    min-height: 42px;
+    padding: 0.55rem 1rem;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 160ms ease, transform 160ms ease, border-color 160ms ease;
+}
+
+.btn:active {
+    transform: translateY(1px);
+}
+
+.btn:focus-visible,
+.icon-btn:focus-visible,
+.dock-item:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+summary:focus-visible {
+    outline: 2px solid var(--accent-strong, var(--accent));
+    outline-offset: 2px;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-primary {
+    background: var(--btn-primary-bg, var(--accent));
+    color: var(--accent-contrast);
+    border-color: transparent;
+    /* Magnetic button: app.js nudges --magnet-x/--magnet-y a few px toward
+       the cursor while hovered with a precise pointer, and clears them on
+       leave -- the transition on .btn-primary/.btn-secondary below (shared
+       with the hover background/border change) handles the settle. */
+    transform: translate(var(--magnet-x, 0px), var(--magnet-y, 0px));
+}
+
+.btn-primary:hover {
+    background: var(--btn-primary-bg-hover, var(--accent-hover));
+}
+
+.btn-secondary {
+    background: transparent;
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.btn-secondary:hover,
+.btn-ghost:hover {
+    background: var(--hover-surface);
+}
+
+.btn-ghost {
+    background: transparent;
+    color: var(--muted);
+    min-height: 32px;
+    padding: 0.25rem 0.55rem;
+}
+
+.btn-sm {
+    min-height: 36px;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.88rem;
+}
+
+/* Reuses the same muted warm red as .flash-error and incorrect-grade
+   states, so a delete action reads as "careful" rather than a jarring
+   alarm red that would clash with the rest of the emerald/gold palette. */
+.btn-danger {
+    background: transparent;
+    border-color: var(--warn);
+    color: var(--warn);
+}
+
+.btn-danger:hover {
+    background: var(--warn-soft);
+}
+
+.delete-form {
+    margin: 0;
+    display: inline-flex;
+}
+
+.cta-row {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+}
+
+.cta-panel {
+    margin-top: 1.5rem;
+}
+
+.notes-layout {
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: 1.25rem;
+    align-items: start;
+}
+
+.topic-rail {
+    position: sticky;
+    top: calc(var(--topbar) + 1rem);
+}
+
+.deadline-layout {
+    display: grid;
+    /* The form card itself caps out at 560px (.form-card), so the left
+       column is capped to match instead of stretching to fill all leftover
+       space -- otherwise the rail ends up visually far from the form even
+       though the actual gap between them is small. */
+    grid-template-columns: minmax(0, 560px) minmax(260px, 320px);
+    gap: 1rem;
+    align-items: start;
+    justify-content: start;
+}
+
+.deadlines-rail {
+    position: sticky;
+    top: calc(var(--topbar) + 1rem);
+}
+
+.deadline-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.deadline-item {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.55rem 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+}
+
+.deadline-date {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    background: var(--icon-bg, var(--accent-soft));
+    color: var(--accent);
+    line-height: 1.1;
+}
+
+.deadline-date [data-moy] {
+    display: block;
+    font-size: 0.62rem;
+    font-weight: 650;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+}
+
+.deadline-date [data-dom] {
+    display: block;
+    font-size: 0.98rem;
+    font-weight: 700;
+}
+
+.deadline-title {
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.3;
+}
+
+.note-card h2,
+.problem-card h2,
+.timeline-body h3 {
+    margin: 0.2rem 0 0.7rem;
+    font-size: 1.25rem;
+}
+
+.note-body,
+.statement {
+    white-space: pre-line;
+}
+
+.note-details {
+    margin: 1rem 0;
+}
+
+.note-details summary {
+    cursor: pointer;
+    font-weight: 650;
+}
+
+.pattern-list {
+    margin: 0.4rem 0 0;
+    padding-left: 1.1rem;
+}
+
+.code-block {
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--code-bg);
+    color: var(--code-text);
+}
+
+.code-toolbar {
+    padding: 0.55rem 0.8rem;
+    border-bottom: 1px solid var(--code-toolbar-border, rgba(255, 255, 255, 0.08));
+    color: var(--code-toolbar-text, #94a3b8);
+    font-size: 0.78rem;
+}
+
+.code-block pre {
+    margin: 0;
+    padding: 1rem 1.1rem 1.15rem;
+    overflow-x: auto;
+    font-family: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: 0.86rem;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.stack {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.try-box {
+    margin-top: 1rem;
+}
+
+.try-box textarea,
+.field input {
+    width: 100%;
+    margin-top: 0.4rem;
+    padding: 0.7rem 0.8rem;
+    border: 1px solid var(--glass-border-b);
+    border-radius: 10px;
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: blur(10px) saturate(140%);
+    backdrop-filter: blur(10px) saturate(140%);
+    color: var(--text);
+    transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.try-box textarea:focus-visible,
+.field input:focus-visible {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.form-card {
+    max-width: 560px;
+}
+
+.field {
+    margin-bottom: 1.1rem;
+}
+
+.field label {
+    font-weight: 650;
+}
+
+.helper {
+    margin: 0.35rem 0 0;
+    font-size: 0.82rem;
+}
+
+.custom-type-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.custom-type-row:last-of-type {
+    border-bottom: none;
+}
+
+.custom-type-check {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-weight: 600;
+    cursor: pointer;
+    min-width: 150px;
+}
+
+.custom-type-check input[type="checkbox"] {
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: var(--accent);
+    cursor: pointer;
+}
+
+.custom-type-count {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.custom-type-count[hidden] {
+    display: none;
+}
+
+.custom-type-count input[type="number"] {
+    width: 4.5rem;
+    padding: 0.4rem 0.5rem;
+    border: 1px solid var(--glass-border-b);
+    border-radius: 8px;
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: blur(10px) saturate(140%);
+    backdrop-filter: blur(10px) saturate(140%);
+    color: var(--text);
+}
+
+.custom-marks-section {
+    margin-top: 0.85rem;
+    padding: 0.7rem 0.85rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--elevated);
+}
+
+.custom-marks-section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    font-weight: 650;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0.1rem;
+}
+
+.custom-marks-section-head .muted {
+    font-weight: 500;
+    font-size: 0.85rem;
+}
+
+.custom-marks-row {
+    padding: 0.45rem 0;
+}
+
+.custom-marks-row .custom-type-check {
+    min-width: 90px;
+    font-weight: 500;
+}
+
+.timeline {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.timeline-item {
+    display: grid;
+    grid-template-columns: 88px minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+}
+
+.timeline-date {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 0.15rem;
+    font-family: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+}
+
+.timeline-date .dom {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.timeline-date .dow,
+.timeline-date .moy {
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+}
+
+.timeline-item.is-busy {
+    opacity: 0.72;
+    background: var(--elevated);
+}
+
+.timeline-item.is-today {
+    border-color: var(--accent-strong, var(--accent));
+}
+
+.empty-state {
+    text-align: center;
+    padding: 2.5rem 1.5rem;
+}
+
+.empty-state svg {
+    width: 28px;
+    height: 28px;
+    color: var(--icon-stroke, var(--accent-strong, var(--accent)));
+}
+
+.empty-state h3 {
+    margin: 0.8rem 0 0.4rem;
+}
+
+.loading-overlay[hidden] {
+    display: none !important;
+}
+
+.loading-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: grid;
+    place-items: center;
+    background: color-mix(in srgb, var(--bg) 70%, transparent);
+    backdrop-filter: blur(6px);
+}
+
+.empty-state.card {
+    background: var(--card);
+}
+
+.flash-messages {
+    margin-bottom: 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.flash {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.7rem 0.9rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent-strong, var(--accent));
+    border-radius: 10px;
+    font-size: 0.88rem;
+    color: var(--text);
+}
+
+/* `.flash` and the [hidden] attribute selector have equal specificity, and
+   this rule comes later in the cascade, so `.flash[hidden]` would otherwise
+   win and show an empty bordered strip even while hidden (seen on the
+   Custom Practice Paper / Custom Notes inline error boxes before any error
+   has actually happened). Bumping specificity here restores `hidden`. */
+.flash[hidden] {
+    display: none;
+}
+
+.flash i {
+    width: 18px;
+    height: 18px;
+    color: var(--icon-stroke, var(--accent-strong, var(--accent)));
+    flex-shrink: 0;
+}
+
+.flash-error {
+    border-left-color: var(--warn);
+}
+
+.flash-error i {
+    color: var(--warn);
+}
+
+.loading-card {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 1rem 1.2rem;
+    background: var(--modal-bg, var(--card));
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+}
+
+.spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--border);
+    border-top-color: var(--icon-stroke, var(--accent-strong, var(--accent)));
+    border-radius: 50%;
+    animation: spin 700ms linear infinite;
+}
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: color-mix(in srgb, var(--bg) 70%, transparent);
+    backdrop-filter: blur(6px);
+}
+
+/* Same [hidden]-vs-display gotcha as .loading-overlay/.flash above: a
+   `display` rule on this selector would otherwise outrank the `hidden`
+   attribute and leave the overlay visible (and, with position: fixed,
+   blocking the whole page) even while "hidden" is set. */
+.modal-overlay[hidden] {
+    display: none !important;
+}
+
+.modal-card {
+    /* background/border/box-shadow come from the shared glass material
+       (see .glass-surface, .card, .stat-card, .modal-card near the top of
+       this file) -- floating glass over the blurred overlay rather than a
+       flat card, per the brief's "floating modals" spec. */
+    width: 100%;
+    max-width: 480px;
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+    padding: 1.25rem;
+    border-radius: 20px;
+    animation: modal-pop 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes modal-pop {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.9rem;
+}
+
+.modal-head h3 {
+    font-size: 1.05rem;
+}
+
+.feedback-textarea {
+    width: 100%;
+    resize: vertical;
+    padding: 0.7rem 0.8rem;
+    border: 1px solid var(--glass-border-b);
+    border-radius: 10px;
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: blur(10px) saturate(140%);
+    backdrop-filter: blur(10px) saturate(140%);
+    color: var(--text);
+}
+
+#feedback-overlay .flash {
+    margin-bottom: 0.8rem;
+}
+
+#feedback-overlay .cta-row {
+    margin-top: 0.9rem;
+    justify-content: space-between;
+}
+
+.feedback-history {
+    margin-top: 1rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.feedback-history[hidden] {
+    display: none;
+}
+
+.feedback-history-item {
+    padding: 0.6rem 0.7rem;
+    background: var(--elevated);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+}
+
+.feedback-history-item p {
+    margin: 0;
+}
+
+.feedback-history-item p + p {
+    margin-top: 0.3rem;
+}
+
+.feedback-history-date {
+    font-size: 0.78rem;
+}
+
+@keyframes fade-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: none; }
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (max-width: 1024px) {
+    .stat-row,
+    .topic-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .notes-layout,
+    .solution-grid,
+    .deadline-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .topic-rail {
+        position: static;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+    }
+
+    .deadlines-rail {
+        position: static;
+    }
+}
+
+@media (max-width: 768px) {
+    /* The dock detaches from beside the title (where it lives on desktop,
+       inline in .topbar-title-row) into its own floating horizontal bar
+       pinned above the thumb zone at the bottom -- there's no room beside
+       the title on a phone. No magnetic magnification here -- touch has no
+       hover to magnetize toward, so app.js's dockMagnet skips entirely on
+       touch pointers and --dock-scale/--dock-lift just stay at their
+       neutral defaults. */
+    .dock {
+        position: fixed;
+        left: 50%;
+        top: auto;
+        z-index: 50;
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
+        flex-direction: row;
+        transform: translateX(-50%);
+        animation: dock-enter-mobile 480ms cubic-bezier(0.22, 1, 0.36, 1) both;
+        /* Brand + every nav destination + theme toggle + account, all at a
+           44px touch target, doesn't fit in one row under ~400px of phone
+           width. Rather than shrink icons below a comfortable touch size or
+           quietly drop destinations, .dock-items (below) scrolls
+           horizontally within a width this cap leaves it -- .dock itself
+           stays overflow: visible (its default) so the account flyout,
+           pinned outside the scrolling region, is never clipped by it. */
+        max-width: calc(100vw - 32px);
+    }
+
+    /* Theme toggle + account remain reachable without scrolling -- only the
+       longer, more-variable list of nav destinations scrolls. flex: 1 1 0%
+       + min-width: 0 is what lets a flex item shrink below its content size
+       enough for its own overflow-x: auto to ever actually engage. */
+    .dock-items {
+        flex: 1 1 0%;
+        min-width: 0;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .dock-items::-webkit-scrollbar {
+        display: none;
+    }
+
+    .dock-item-wrap,
+    .dock-brand,
+    .dock-divider,
+    .dock-utility {
+        flex-shrink: 0;
+    }
+
+    /* Flyout opens upward off the bottom bar instead of downward off the
+       top bar -- same glass card, different anchor edge. Still positioned off
+       .account-menu-wrap (position: relative, unclipped) rather than the
+       viewport, since .dock-utility -- unlike .dock-items -- never
+       scrolls. Right-aligned rather than centered: the account item sits
+       at the dock's trailing edge, close to the screen's right edge, so a
+       centered 248px-wide card would run off-screen; opening flush with
+       the trigger's right edge keeps it on-screen instead. */
+    .account-menu {
+        left: auto;
+        right: 0;
+        bottom: calc(100% + 14px);
+        transform: none;
+    }
+
+    .content {
+        /* Swap the desktop rail's inline-start reservation for a
+           bottom reservation that clears the floating bottom dock. */
+        padding: 1rem 1rem calc(env(safe-area-inset-bottom, 0px) + 14px + 66px + 1.25rem);
+    }
+
+    .topbar {
+        padding: 0.75rem 1rem;
+    }
+
+    .timeline-item {
+        grid-template-columns: 64px minmax(0, 1fr);
+    }
+}
+
+@keyframes dock-enter-mobile {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(14px) scale(0.92);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0) scale(1);
+    }
+}
+
+@media (max-width: 375px) {
+    .stat-row,
+    .topic-grid,
+    .cta-panel {
+        grid-template-columns: 1fr;
+        display: grid;
+    }
+
+    .topbar-actions .btn {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 1;
+}
+
+:root[data-theme="light"] input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(36%) sepia(39%) saturate(1211%) hue-rotate(221deg) brightness(92%) contrast(92%);
+}
+
+:root[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) brightness(2);
+}
+
+/* ---------------------------------------------------- History: 4 boxes -- */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.history-box-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+@media (max-width: 1040px) {
+    .history-box-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.history-box {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+    text-decoration: none;
+    color: inherit;
+}
+
+.history-box h3 {
+    margin: 0;
+}
+
+.history-box .badge {
+    margin-top: 0.4rem;
+}
+
+.history-box-icon {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    margin-bottom: 0.3rem;
+    border-radius: 10px;
+    background: var(--hover-surface);
+    color: var(--accent);
+}
+
+/* -------------------------------------------- Custom Notes: folder cards */
+.folder-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    text-decoration: none;
+    color: inherit;
+}
+
+.folder-card h3 {
+    margin: 0;
+}
+
+.folder-card .cta-row {
+    margin-top: 0.6rem;
+    justify-content: flex-start;
+}
+
+.folder-card-edit[hidden] {
+    display: none;
+}
+
+.folder-card-edit {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.folder-card-edit .cta-row {
+    justify-content: flex-start;
+}
+
+.new-folder-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.6rem;
+}
+
+.new-folder-card .field {
+    width: 100%;
+}
+
+@media (max-width: 760px) {
+    .history-box-grid {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · Solvestreak{% endblock %}
+{% block page_title %}Solvestreak{% endblock %}
+{% block page_subtitle %}Everything that matters today, in one place.{% endblock %}
+
+{% block header_streak %}
+{% if user_streak %}
+<a class="streak-pill {% if user_streak.current == 0 %}streak-pill-cold{% elif user_streak.at_risk %}streak-pill-risk{% else %}streak-pill-hot{% endif %}" href="/" title="{% if user_streak.current == 0 %}Generate something today to start a streak{% elif user_streak.at_risk %}Your streak is at risk -- generate something today to keep it alive{% else %}You're on a {{ user_streak.current }}-day streak{% endif %}">
+    <i data-lucide="flame"></i>
+    <span>
+        {% if user_streak.current > 0 %}
+        {{ user_streak.current }} day{{ "s" if user_streak.current != 1 else "" }} streak
+        {% else %}
+        No streak yet
+        {% endif %}
+    </span>
+    {% if user_streak.at_risk %}<span class="streak-risk-dot" aria-hidden="true"></span>{% endif %}
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+{% set streak_milestones = (7, 14, 30, 50, 100, 150, 200, 365) %}
+{% set is_milestone_streak = user_streak and user_streak.current in streak_milestones %}
+<section class="hero hero-command">
+    <!-- Soft diffused glow + drifting glass-shard shapes behind the
+         greeting (brief ref-4) -- decorative only, so it's a real
+         aria-hidden layer rather than more content fighting .hero-command's
+         own ::before (already spoken for by the two-tone radial wash) for
+         pseudo-element space. Each shard only animates transform, same
+         compositor-only rule as every other continuous-loop motion here. -->
+    <div class="hero-atmosphere" aria-hidden="true">
+        <span class="hero-shard hero-shard-1"></span>
+        <span class="hero-shard hero-shard-2"></span>
+        <span class="hero-shard hero-shard-3"></span>
+    </div>
+    <div class="hero-greeting">
+        <span class="eyebrow">Solvestreak</span>
+        <h2 class="hero-title"><span data-greeting>Welcome back</span>, {{ (current_user.name or "there").split(" ")[0] if current_user else "there" }}</h2>
+        <p class="lede">
+            {% if user_streak and user_streak.current > 0 %}
+                {% if user_streak.at_risk %}
+                Your {{ user_streak.current }}-day streak is at risk -- generate something today to keep it alive.
+                {% else %}
+                You're on a {{ user_streak.current }}-day streak. Here's where to focus next.
+                {% endif %}
+            {% else %}
+            Focus on the areas where you have the most room to improve.
+            {% endif %}
+        </p>
+    </div>
+    <div class="hero-streak-orb" aria-hidden="true">
+        <div class="hero-streak-ring {% if not user_streak or user_streak.current == 0 %}is-cold{% elif user_streak.at_risk %}is-risk{% elif is_milestone_streak %}is-milestone{% endif %}">
+            <i data-lucide="flame"></i>
+            <span class="hero-streak-count">{{ user_streak.current if user_streak else 0 }}</span>
+            {% if is_milestone_streak %}
+            <!-- Gold shimmer achievement effect -- a real element, not a
+                 pseudo-element, since the ring's ::before/::after are both
+                 already spoken for by the shared .liquid-glass material
+                 (swirl + cursor glass highlight; see near the top of
+                 style.css). -->
+            <span class="milestone-shimmer"></span>
+            {% endif %}
+        </div>
+        <span class="hero-streak-caption">day streak</span>
+    </div>
+</section>
+
+{% if user_streak and user_streak.at_risk %}
+<div class="flash flash-error" style="margin-bottom: 1rem;">
+    <i data-lucide="flame"></i>
+    <span>Your {{ user_streak.current }}-day streak is at risk -- generate something today to keep it alive.</span>
+</div>
+{% endif %}
+
+<section class="stat-row stat-row-5" aria-label="Your progress">
+    <article class="stat-card">
+        <p class="stat-label">Current Streak</p>
+        <p class="stat-value">{{ user_streak.current if user_streak else 0 }}</p>
+    </article>
+    <article class="stat-card">
+        <p class="stat-label">Longest Streak</p>
+        <p class="stat-value">{{ user_streak.longest if user_streak else 0 }}</p>
+    </article>
+    <article class="stat-card">
+        <p class="stat-label">Today's Generations</p>
+        <p class="stat-value stat-value-sm">
+            {% if is_admin_unlimited %}Unlimited{% else %}{{ today_generations }} / {{ daily_generations_per_user }}{% endif %}
+        </p>
+    </article>
+    <article class="stat-card">
+        <p class="stat-label">Needs Most Practice</p>
+        <p class="stat-value stat-value-sm">{{ weak_topic_frequency[0][0] if weak_topic_frequency else "Not enough data yet" }}</p>
+    </article>
+    <article class="stat-card">
+        <p class="stat-label">Fastest Mock Test</p>
+        <p class="stat-value stat-value-sm">
+            {% if best_mock_test %}{{ best_mock_test.elapsed_seconds // 60 }}m {{ '%02d'|format(best_mock_test.elapsed_seconds % 60) }}s{% else %}No timed attempt yet{% endif %}
+        </p>
+    </article>
+</section>
+
+{% if weak_topics %}
+<section id="focus-areas">
+    <div class="section-head">
+        <h3>Focus Areas</h3>
+        <p class="muted">Ranked from your LeetCode solve history. No invented scores — just where to start.</p>
+    </div>
+
+    <div class="topic-grid">
+        {% for topic in weak_topics %}
+        <article class="card topic-card">
+            <div class="topic-card-top">
+                <span class="rank">{{ '%02d'|format(loop.index) }}</span>
+                <span class="badge badge-warning">Needs Practice</span>
+            </div>
+            <div class="topic-card-icon" aria-hidden="true">
+                <i data-lucide="target"></i>
+            </div>
+            <h3>{{ topic }}</h3>
+            <p class="muted">Build stronger pattern recognition.</p>
+            <div class="progress-track" aria-hidden="true">
+                <span class="progress-fill"></span>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+
+<div class="section-head" style="margin-top: 1.5rem;">
+    <h3>Weak Topics</h3>
+</div>
+<section class="stat-row" aria-label="Session stats">
+    <article class="stat-card">
+        <p class="stat-label">Weak Topics</p>
+        <p class="stat-value">{{ weak_topics|length }}</p>
+    </article>
+    <article class="stat-card stat-card-clickable">
+        <button type="button" class="stat-card-btn" id="topics-tracked-btn" aria-haspopup="dialog" aria-controls="topics-tracked-overlay">
+            <p class="stat-label">Topics Tracked</p>
+            <p class="stat-value">{{ topics_tracked }}</p>
+        </button>
+    </article>
+    <article class="stat-card">
+        <p class="stat-label">Practice Focus</p>
+        <p class="stat-value stat-value-sm">{{ weak_topics[0] }}</p>
+    </article>
+    <article class="stat-card">
+        <p class="stat-label">Last Synced</p>
+        <p class="stat-value stat-value-sm">This visit</p>
+    </article>
+</section>
+{% else %}
+<div class="empty-state card">
+    <i data-lucide="inbox"></i>
+    {% if leetcode_username_missing %}
+    <h3>Add your LeetCode username to get started.</h3>
+    <p class="muted">Solvestreak reads your LeetCode profile to find your weak topics. Add your username in Settings.</p>
+    <a class="btn btn-primary" href="/settings">Go to Settings <i data-lucide="arrow-right"></i></a>
+    {% else %}
+    <h3>No weak topics detected yet.</h3>
+    <p class="muted">Once your LeetCode history is available, Solvestreak will highlight where to practice.</p>
+    {% endif %}
+</div>
+{% endif %}
+
+{% if weak_topic_frequency|length > 1 %}
+<section style="margin-top: 1.5rem;">
+    <div class="section-head">
+        <h3>Where You've Needed the Most Practice</h3>
+        <p class="muted">Topics that have shown up most often in your weak-topic picks across every past run.</p>
+    </div>
+    <div class="card" style="padding: 1.1rem 1.3rem;">
+        {% for topic, count in weak_topic_frequency %}
+        <div style="display: flex; justify-content: space-between; align-items: center; {% if not loop.last %}margin-bottom: 0.6rem;{% endif %}">
+            <span>{{ topic }}</span>
+            <span class="badge">{{ count }} run{{ "s" if count != 1 else "" }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    <a class="btn btn-secondary" href="/history" style="margin-top: 1rem;">View Full History <i data-lucide="arrow-right"></i></a>
+</section>
+{% endif %}
+
+{% if weak_topics %}
+<div class="cta-row">
+    <form action="/notes" method="post" class="js-loading-form" data-loading-text="Generating topic notes...">
+        <button type="submit" class="btn btn-primary">
+            Build My Study Session
+            <i data-lucide="arrow-right"></i>
+        </button>
+    </form>
+    <a class="btn btn-secondary" href="/deadline">Create Deadline Plan</a>
+</div>
+{% endif %}
+
+<div class="modal-overlay" id="topics-tracked-overlay" hidden aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="topics-tracked-title">
+        <div class="modal-head">
+            <h3 id="topics-tracked-title">Topics Tracked</h3>
+            <button type="button" class="icon-btn" id="topics-tracked-close" aria-label="Close">
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+        <p class="muted" style="margin: 0 0 0.9rem;">Every LeetCode topic this account has solve data for, most practiced first.</p>
+        {% if tracked_topics %}
+        <div style="max-height: 60vh; overflow-y: auto;">
+            {% for tag_name, problems_solved in tracked_topics %}
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; {% if not loop.last %}border-bottom: 1px solid var(--border);{% endif %}">
+                <span>{{ tag_name }}</span>
+                <span class="badge">{{ problems_solved }} solved</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="muted">No tracked topics yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

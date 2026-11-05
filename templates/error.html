@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} · Solvestreak{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block page_subtitle %}Something needs a quick fix{% endblock %}
+
+{% block content %}
+<div class="empty-state card error-state">
+    <i data-lucide="alert-circle"></i>
+    <h3>Something went wrong. Try again.</h3>
+    <p class="muted">{{ message }}</p>
+    <a class="btn btn-primary" href="{{ back_href }}">{{ back_label }}</a>
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Custom Papers · Solvestreak{% endblock %}
+{% block page_title %}Custom Papers{% endblock %}
+{% block page_subtitle %}Every custom-topic practice paper, newest first{% endblock %}
+
+{% block header_actions %}
+<a class="btn btn-secondary btn-sm" href="/history">
+    <i data-lucide="arrow-left"></i>
+    Back to History
+</a>
+{% endblock %}
+
+{% block content %}
+{% if papers %}
+<div class="stack">
+    {% for paper in papers %}
+    <article class="card problem-card">
+        <header class="problem-head">
+            <span class="rank">Paper #{{ paper.id }}</span>
+            <div class="meta-row">
+                {% for topic in paper.topics %}
+                <span class="badge">{{ topic }}</span>
+                {% endfor %}
+            </div>
+        </header>
+        <div class="meta-row">
+            {% for item in paper.composition %}
+            <span class="badge">{{ item }}</span>
+            {% endfor %}
+        </div>
+        <p class="muted">{{ paper.created_at }}</p>
+        <div class="cta-row">
+            <a class="btn btn-primary btn-sm" href="/history/custom-papers/pdf/{{ paper.id }}">
+                <i data-lucide="download"></i>
+                Download PDF
+            </a>
+            <form method="POST" action="{{ url_for('delete_history_custom_paper', paper_id=paper.id) }}" class="delete-form" onsubmit="return confirm('Delete this custom paper? This can\'t be undone.');">
+                <button type="submit" class="btn btn-danger btn-sm">
+                    <i data-lucide="trash-2"></i>
+                    Delete
+                </button>
+            </form>
+        </div>
+    </article>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state card">
+    <i data-lucide="sliders-horizontal"></i>
+    <h3>No custom papers yet.</h3>
+    <p class="muted">Generate a custom practice paper from the Paper tab to see it here.</p>
+    <a class="btn btn-primary" href="/paper">Go to Practice Paper</a>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}{{ folder.name if folder else "Uncategorized" }} · Custom Notes · Solvestreak{% endblock %}
+{% block page_title %}{{ folder.name if folder else "Uncategorized" }}{% endblock %}
+{% block page_subtitle %}Custom Notes{% endblock %}
+
+{% block header_actions %}
+<a class="btn btn-secondary btn-sm" href="/history/custom-notes">
+    <i data-lucide="arrow-left"></i>
+    Back to Folders
+</a>
+{% endblock %}
+
+{% block content %}
+{% if notes_list %}
+<div class="stack">
+    {% for note in notes_list %}
+    <article class="card problem-card">
+        <header class="problem-head">
+            <span class="rank">Notes #{{ note.id }}</span>
+            <div class="meta-row">
+                {% for topic in note.topics %}
+                <span class="badge">{{ topic }}</span>
+                {% endfor %}
+            </div>
+        </header>
+        <p class="muted">{{ note.created_at }}</p>
+        <div class="cta-row">
+            <a class="btn btn-primary btn-sm" href="/history/custom-notes/pdf/{{ note.id }}">
+                <i data-lucide="download"></i>
+                Download PDF
+            </a>
+            <form method="POST" action="{{ url_for('delete_history_custom_note', note_id=note.id) }}" class="delete-form" onsubmit="return confirm('Delete this set of notes? This can\'t be undone.');">
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <button type="submit" class="btn btn-danger btn-sm">
+                    <i data-lucide="trash-2"></i>
+                    Delete
+                </button>
+            </form>
+        </div>
+    </article>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state card">
+    <i data-lucide="folder-open"></i>
+    <h3>No notes in here yet.</h3>
+    <p class="muted">Generate custom notes from the Notes tab and pick this folder to save them here.</p>
+    <a class="btn btn-primary" href="/notes">Go to Notes</a>
+</div>
+{% endif %}
+{% endblock %}

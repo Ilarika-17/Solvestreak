@@ -1,0 +1,1088 @@
+(function () {
+    var root = document.documentElement;
+    var storageKey = "solvestreak-theme";
+    var loading = document.getElementById("loading-overlay");
+    var loadingText = document.getElementById("loading-text");
+
+    function currentTheme() {
+        return root.getAttribute("data-theme") || "light";
+    }
+
+    function setTheme(next) {
+        root.setAttribute("data-theme", next);
+        try {
+            localStorage.setItem(storageKey, next);
+        } catch (e) {}
+        updateToggles();
+        if (window.lucide) window.lucide.createIcons();
+    }
+
+    function updateToggles() {
+        var dark = currentTheme() === "dark";
+        document.querySelectorAll("[data-theme-toggle]").forEach(function (btn) {
+            btn.setAttribute("aria-pressed", dark ? "true" : "false");
+        });
+    }
+
+    document.querySelectorAll("[data-theme-toggle]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+            setTheme(currentTheme() === "dark" ? "light" : "dark");
+        });
+    });
+    updateToggles();
+
+    // ---- Command Centre hero: time-of-day greeting ----
+    // Computed client-side (not on the server) so it matches the viewer's
+    // own clock rather than the server's time zone.
+    var greetingEl = document.querySelector("[data-greeting]");
+    if (greetingEl) {
+        var hour = new Date().getHours();
+        var greeting = hour < 5 ? "Still up" : hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+        greetingEl.textContent = greeting;
+    }
+
+    var accountTrigger = document.getElementById("account-trigger");
+    var accountMenu = document.getElementById("account-menu");
+
+    function closeAccountMenu() {
+        if (!accountMenu || !accountTrigger) return;
+        accountMenu.hidden = true;
+        accountTrigger.setAttribute("aria-expanded", "false");
+    }
+
+    function openAccountMenu() {
+        if (!accountMenu || !accountTrigger) return;
+        accountMenu.hidden = false;
+        accountTrigger.setAttribute("aria-expanded", "true");
+    }
+
+    if (accountTrigger && accountMenu) {
+        accountTrigger.addEventListener("click", function (event) {
+            event.stopPropagation();
+            if (accountMenu.hidden) {
+                openAccountMenu();
+            } else {
+                closeAccountMenu();
+            }
+        });
+
+        document.addEventListener("click", function (event) {
+            if (accountMenu.hidden) return;
+            if (accountMenu.contains(event.target) || accountTrigger.contains(event.target)) return;
+            closeAccountMenu();
+        });
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") closeAccountMenu();
+        });
+    }
+
+    // ---- Feedback / suggestions popup (topbar icon -- every page, no-op when signed out) ----
+    var feedbackBtn = document.getElementById("feedback-btn");
+    var feedbackOverlay = document.getElementById("feedback-overlay");
+    if (feedbackBtn && feedbackOverlay) {
+        var feedbackClose = document.getElementById("feedback-close");
+        var feedbackMessage = document.getElementById("feedback-message");
+        var feedbackSubmit = document.getElementById("feedback-submit");
+        var feedbackError = document.getElementById("feedback-error");
+        var feedbackSuccess = document.getElementById("feedback-success");
+        var feedbackHistoryToggle = document.getElementById("feedback-toggle-history");
+        var feedbackHistoryLabel = document.getElementById("feedback-history-toggle-label");
+        var feedbackHistory = document.getElementById("feedback-history");
+
+        function hideFeedbackMessages() {
+            if (feedbackError) {
+                feedbackError.hidden = true;
+                feedbackError.textContent = "";
+            }
+            if (feedbackSuccess) {
+                feedbackSuccess.hidden = true;
+                feedbackSuccess.textContent = "";
+            }
+        }
+
+        function showFeedbackError(message) {
+            if (feedbackError) {
+                feedbackError.textContent = message;
+                feedbackError.hidden = false;
+            }
+        }
+
+        function showFeedbackSuccess(message) {
+            if (feedbackSuccess) {
+                feedbackSuccess.textContent = message;
+                feedbackSuccess.hidden = false;
+            }
+        }
+
+        function openFeedback() {
+            feedbackOverlay.hidden = false;
+            feedbackOverlay.setAttribute("aria-hidden", "false");
+            hideFeedbackMessages();
+            if (feedbackMessage) feedbackMessage.focus();
+        }
+
+        function closeFeedback() {
+            feedbackOverlay.hidden = true;
+            feedbackOverlay.setAttribute("aria-hidden", "true");
+        }
+
+        feedbackBtn.addEventListener("click", openFeedback);
+        if (feedbackClose) feedbackClose.addEventListener("click", closeFeedback);
+        feedbackOverlay.addEventListener("click", function (event) {
+            if (event.target === feedbackOverlay) closeFeedback();
+        });
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape" && !feedbackOverlay.hidden) closeFeedback();
+        });
+
+        function renderFeedbackHistory(items) {
+            if (!feedbackHistory) return;
+            feedbackHistory.innerHTML = "";
+            if (!items.length) {
+                var empty = document.createElement("p");
+                empty.className = "muted";
+                empty.textContent = "Nothing sent yet.";
+                feedbackHistory.appendChild(empty);
+                return;
+            }
+            items.forEach(function (item) {
+                var row = document.createElement("div");
+                row.className = "feedback-history-item";
+
+                var meta = document.createElement("p");
+                meta.className = "muted feedback-history-date";
+                var parsed = new Date(item.created_at);
+                meta.textContent = isNaN(parsed.getTime()) ? item.created_at : parsed.toLocaleString();
+                row.appendChild(meta);
+
+                var body = document.createElement("p");
+                body.textContent = item.message; // textContent, never innerHTML -- this is stored user text
+                row.appendChild(body);
+
+                feedbackHistory.appendChild(row);
+            });
+        }
+
+        function loadFeedbackHistory() {
+            fetch("/feedback")
+                .then(function (response) { return response.json(); })
+                .then(function (data) { renderFeedbackHistory(data.items || []); })
+                .catch(function () { renderFeedbackHistory([]); });
+        }
+
+        if (feedbackHistoryToggle) {
+            feedbackHistoryToggle.addEventListener("click", function () {
+                var showing = !feedbackHistory.hidden;
+                if (showing) {
+                    feedbackHistory.hidden = true;
+                    if (feedbackHistoryLabel) feedbackHistoryLabel.textContent = "View past feedback";
+                } else {
+                    feedbackHistory.hidden = false;
+                    if (feedbackHistoryLabel) feedbackHistoryLabel.textContent = "Hide past feedback";
+                    loadFeedbackHistory(); // always refresh -- cheap, and keeps a just-sent note current
+                }
+            });
+        }
+
+        if (feedbackSubmit) {
+            feedbackSubmit.addEventListener("click", function () {
+                var message = feedbackMessage ? feedbackMessage.value.trim() : "";
+                if (!message) {
+                    showFeedbackError("Write a note before sending.");
+                    return;
+                }
+                hideFeedbackMessages();
+                feedbackSubmit.disabled = true;
+
+                fetch("/feedback", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: message }),
+                })
+                    .then(function (response) {
+                        return response.json().catch(function () { return {}; }).then(function (data) {
+                            if (!response.ok) throw new Error(data.error || "Something went wrong sending that.");
+                            return data;
+                        });
+                    })
+                    .then(function () {
+                        if (feedbackMessage) feedbackMessage.value = "";
+                        showFeedbackSuccess("Thanks -- saved.");
+                        if (feedbackHistory && !feedbackHistory.hidden) loadFeedbackHistory();
+                    })
+                    .catch(function (err) {
+                        showFeedbackError(err.message || "Something went wrong sending that.");
+                    })
+                    .finally(function () {
+                        feedbackSubmit.disabled = false;
+                    });
+            });
+        }
+    }
+
+    // ---- "Flag this question" popup (see solutions.html's Flag buttons) ----
+    var flagOverlay = document.getElementById("flag-overlay");
+    if (flagOverlay) {
+        var flagClose = document.getElementById("flag-close");
+        var flagMessage = document.getElementById("flag-message");
+        var flagSubmit = document.getElementById("flag-submit");
+        var flagError = document.getElementById("flag-error");
+        var flagSuccess = document.getElementById("flag-success");
+        var flagContextLabel = document.getElementById("flag-context-label");
+        var flagScreenshotInput = document.getElementById("flag-screenshot");
+        var flagScreenshotPreview = document.getElementById("flag-screenshot-preview");
+        var flagScreenshotPreviewImg = document.getElementById("flag-screenshot-preview-img");
+        var flagScreenshotRemove = document.getElementById("flag-screenshot-remove");
+        var flagContext = ""; // set when a Flag button is clicked, sent as-is to /feedback/flag
+
+        function hideFlagMessages() {
+            if (flagError) { flagError.hidden = true; flagError.textContent = ""; }
+            if (flagSuccess) { flagSuccess.hidden = true; flagSuccess.textContent = ""; }
+        }
+
+        function showFlagError(message) {
+            if (flagError) { flagError.textContent = message; flagError.hidden = false; }
+        }
+
+        function resetFlagScreenshot() {
+            if (flagScreenshotInput) flagScreenshotInput.value = "";
+            if (flagScreenshotPreview) flagScreenshotPreview.hidden = true;
+            if (flagScreenshotPreviewImg) flagScreenshotPreviewImg.src = "";
+        }
+
+        function openFlag(context) {
+            flagContext = context || "";
+            if (flagContextLabel) {
+                flagContextLabel.textContent = flagContext ? ("Reporting: " + flagContext) : "";
+            }
+            if (flagMessage) flagMessage.value = "";
+            resetFlagScreenshot();
+            hideFlagMessages();
+            flagOverlay.hidden = false;
+            flagOverlay.setAttribute("aria-hidden", "false");
+            if (flagMessage) flagMessage.focus();
+        }
+
+        function closeFlag() {
+            flagOverlay.hidden = true;
+            flagOverlay.setAttribute("aria-hidden", "true");
+        }
+
+        document.querySelectorAll("[data-flag-btn]").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                var card = btn.closest("[data-problem-id]");
+                var context = card ? btn.getAttribute("data-flag-context") || "" : "";
+                openFlag(context);
+            });
+        });
+
+        if (flagClose) flagClose.addEventListener("click", closeFlag);
+        flagOverlay.addEventListener("click", function (event) {
+            if (event.target === flagOverlay) closeFlag();
+        });
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape" && !flagOverlay.hidden) closeFlag();
+        });
+
+        if (flagScreenshotInput) {
+            flagScreenshotInput.addEventListener("change", function () {
+                var file = flagScreenshotInput.files && flagScreenshotInput.files[0];
+                if (!file) { resetFlagScreenshot(); return; }
+                if (file.size > 5 * 1024 * 1024) {
+                    showFlagError("That screenshot is over 5MB -- try a smaller image.");
+                    resetFlagScreenshot();
+                    return;
+                }
+                var reader = new FileReader();
+                reader.onload = function () {
+                    if (flagScreenshotPreviewImg) flagScreenshotPreviewImg.src = reader.result;
+                    if (flagScreenshotPreview) flagScreenshotPreview.hidden = false;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        if (flagScreenshotRemove) {
+            flagScreenshotRemove.addEventListener("click", resetFlagScreenshot);
+        }
+
+        if (flagSubmit) {
+            flagSubmit.addEventListener("click", function () {
+                var message = flagMessage ? flagMessage.value.trim() : "";
+                if (!message) {
+                    showFlagError("Describe what's wrong before sending.");
+                    return;
+                }
+                hideFlagMessages();
+                flagSubmit.disabled = true;
+
+                var formData = new FormData();
+                formData.append("message", message);
+                formData.append("context", flagContext);
+                var file = flagScreenshotInput && flagScreenshotInput.files && flagScreenshotInput.files[0];
+                if (file) formData.append("screenshot", file);
+
+                fetch("/feedback/flag", { method: "POST", body: formData })
+                    .then(function (response) {
+                        return response.json().catch(function () { return {}; }).then(function (data) {
+                            if (!response.ok) throw new Error(data.error || "Something went wrong sending that.");
+                            return data;
+                        });
+                    })
+                    .then(function () {
+                        if (flagSuccess) { flagSuccess.textContent = "Thanks -- flagged for review."; flagSuccess.hidden = false; }
+                        if (flagMessage) flagMessage.value = "";
+                        resetFlagScreenshot();
+                        setTimeout(closeFlag, 1200);
+                    })
+                    .catch(function (err) {
+                        showFlagError(err.message || "Something went wrong sending that.");
+                    })
+                    .finally(function () {
+                        flagSubmit.disabled = false;
+                    });
+            });
+        }
+    }
+
+    document.querySelectorAll("[data-copy]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+            var block = btn.closest(".code-block");
+            var code = block ? block.querySelector("pre") : null;
+            if (!code) return;
+            var original = btn.innerHTML;
+            function done() {
+                btn.textContent = "Copied";
+                setTimeout(function () {
+                    btn.innerHTML = original;
+                    if (window.lucide) window.lucide.createIcons();
+                }, 1200);
+            }
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(code.textContent).then(done).catch(done);
+            } else {
+                done();
+            }
+        });
+    });
+
+    // Correct/Incorrect marking on the Solutions page (see solutions.html).
+    // Each solution card carries data-problem-id / data-run-id / data-topic;
+    // clicking a grade button posts to /solutions/grade and updates that
+    // card's own status in place, with no full page reload. This is what
+    // feeds the "closing the loop" weak-topic blending in app.py.
+    document.querySelectorAll(".grade-btn").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+            var card = btn.closest("[data-problem-id]");
+            if (!card) return;
+            var status = card.querySelector("[data-grade-status]");
+            var buttons = card.querySelectorAll(".grade-btn");
+            var correct = btn.getAttribute("data-grade") === "correct";
+
+            buttons.forEach(function (b) { b.disabled = true; });
+            if (status) status.textContent = "Saving...";
+
+            fetch("/solutions/grade", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    run_id: Number(card.getAttribute("data-run-id")),
+                    problem_id: Number(card.getAttribute("data-problem-id")),
+                    topic: card.getAttribute("data-topic") || "",
+                    correct: correct,
+                }),
+            })
+                .then(function (response) {
+                    return response.json().catch(function () { return {}; }).then(function (data) {
+                        if (!response.ok) throw new Error(data.error || "Couldn't save that.");
+                        return data;
+                    });
+                })
+                .then(function () {
+                    buttons.forEach(function (b) { b.classList.remove("is-selected"); });
+                    btn.classList.add("is-selected");
+                    if (status) status.textContent = "Saved";
+                })
+                .catch(function (err) {
+                    if (status) status.textContent = err.message || "Couldn't save that.";
+                })
+                .finally(function () {
+                    buttons.forEach(function (b) { b.disabled = false; });
+                });
+        });
+    });
+
+    // ---- Timed Mock Test (see paper.html) ----
+    var mockTestPanel = document.getElementById("mock-test-panel");
+    if (mockTestPanel) {
+        var mtRunId = mockTestPanel.getAttribute("data-run-id");
+        var mtIdle = document.getElementById("mock-test-idle");
+        var mtRunning = document.getElementById("mock-test-running");
+        var mtResult = document.getElementById("mock-test-result");
+        var mtClock = document.getElementById("mock-test-clock");
+        var mtDurationSelect = document.getElementById("mock-test-duration");
+        var mtStartBtn = document.getElementById("mock-test-start");
+        var mtFinishBtn = document.getElementById("mock-test-finish");
+
+        var mtStartedAt = null;
+        var mtDurationSeconds = 0;
+        var mtIntervalId = null;
+
+        function formatClock(totalSeconds) {
+            var s = Math.max(0, totalSeconds);
+            var m = Math.floor(s / 60);
+            var r = s % 60;
+            return String(m).padStart(2, "0") + ":" + String(r).padStart(2, "0");
+        }
+
+        function tickMockTest() {
+            var elapsed = Math.floor((Date.now() - mtStartedAt) / 1000);
+            var remaining = mtDurationSeconds - elapsed;
+            if (mtClock) {
+                mtClock.textContent = formatClock(remaining);
+                mtClock.classList.toggle("mock-test-clock-overtime", remaining <= 0);
+            }
+        }
+
+        if (mtStartBtn) {
+            mtStartBtn.addEventListener("click", function () {
+                var minutes = Number(mtDurationSelect ? mtDurationSelect.value : 30) || 30;
+                mtDurationSeconds = minutes * 60;
+                mtStartedAt = Date.now();
+                if (mtIdle) mtIdle.hidden = true;
+                if (mtResult) mtResult.hidden = true;
+                if (mtRunning) mtRunning.hidden = false;
+                tickMockTest();
+                mtIntervalId = setInterval(tickMockTest, 1000);
+            });
+        }
+
+        if (mtFinishBtn) {
+            mtFinishBtn.addEventListener("click", function () {
+                if (mtStartedAt === null) return;
+                if (mtIntervalId) clearInterval(mtIntervalId);
+                var elapsedSeconds = Math.round((Date.now() - mtStartedAt) / 1000);
+                var durationMinutes = Math.round(mtDurationSeconds / 60);
+
+                mtFinishBtn.disabled = true;
+                fetch("/paper/mock-test/finish", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        run_id: Number(mtRunId),
+                        duration_minutes: durationMinutes,
+                        elapsed_seconds: elapsedSeconds,
+                    }),
+                })
+                    .then(function (response) {
+                        return response.json().catch(function () { return {}; }).then(function (data) {
+                            if (!response.ok) throw new Error(data.error || "Couldn't save that attempt.");
+                            return data;
+                        });
+                    })
+                    .then(function (data) {
+                        if (mtRunning) mtRunning.hidden = true;
+                        if (mtResult) {
+                            var minsPart = Math.floor(elapsedSeconds / 60);
+                            var secsPart = elapsedSeconds % 60;
+                            var timeStr = minsPart + "m " + String(secsPart).padStart(2, "0") + "s";
+                            mtResult.textContent = data.within_time_limit
+                                ? ("Finished in " + timeStr + " -- within your " + durationMinutes + "-minute limit.")
+                                : ("Finished in " + timeStr + " -- that went over your " + durationMinutes + "-minute limit.");
+                            mtResult.className = "mock-test-result " + (data.within_time_limit ? "mock-test-result-ok" : "mock-test-result-over");
+                            mtResult.hidden = false;
+                        }
+                        mtStartedAt = null;
+                    })
+                    .catch(function (err) {
+                        if (mtResult) {
+                            mtResult.textContent = err.message || "Couldn't save that attempt.";
+                            mtResult.className = "mock-test-result mock-test-result-over";
+                            mtResult.hidden = false;
+                        }
+                    })
+                    .finally(function () {
+                        mtFinishBtn.disabled = false;
+                    });
+            });
+        }
+    }
+
+    document.querySelectorAll("form.js-loading-form").forEach(function (form) {
+        form.addEventListener("submit", function () {
+            if (!loading) return;
+            if (loadingText) {
+                loadingText.textContent = form.getAttribute("data-loading-text") || "Analyzing your practice history...";
+            }
+            loading.hidden = false;
+            loading.setAttribute("aria-hidden", "false");
+        });
+    });
+
+    var months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+    var days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+    var today = new Date();
+    var todayIso = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, "0") + "-" + String(today.getDate()).padStart(2, "0");
+
+    document.querySelectorAll("[data-iso-date]").forEach(function (item) {
+        var iso = item.getAttribute("data-iso-date");
+        if (!iso) return;
+        var parts = iso.split("-");
+        if (parts.length !== 3) return;
+        var date = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+        var dow = item.querySelector("[data-dow]");
+        var dom = item.querySelector("[data-dom]");
+        var moy = item.querySelector("[data-moy]");
+        if (dow) dow.textContent = days[date.getDay()];
+        if (dom) dom.textContent = String(date.getDate());
+        if (moy) moy.textContent = months[date.getMonth()];
+        if (iso === todayIso) item.classList.add("is-today");
+    });
+
+    // ---- Custom Practice Paper (paper.html only -- no-ops elsewhere) ----
+    var customBtn = document.getElementById("custom-paper-btn");
+    var normalView = document.getElementById("paper-normal-view");
+    var customView = document.getElementById("paper-custom-view");
+    if (customBtn && normalView && customView) {
+        var backBtn = document.getElementById("custom-paper-back");
+        var generateBtn = document.getElementById("custom-paper-generate");
+        var errorBox = document.getElementById("custom-paper-error");
+        var totalCountEl = document.getElementById("custom-total-count");
+        var typeToggles = customView.querySelectorAll(".custom-type-toggle");
+        var includeOrCheckbox = document.getElementById("custom-include-or");
+
+        // Each toggle's "count key" -- "mcq" for the flat MCQ row, or
+        // "short-1" / "long-10" etc. for a marks row -- matches the
+        // data-type-count attribute on its sibling count field in the HTML.
+        function countKeyFor(toggle) {
+            return toggle.dataset.marks ? (toggle.dataset.type + "-" + toggle.dataset.marks) : toggle.dataset.type;
+        }
+
+        function hideCustomError() {
+            if (errorBox) {
+                errorBox.hidden = true;
+                errorBox.textContent = "";
+            }
+        }
+
+        function showCustomError(message) {
+            if (errorBox) {
+                errorBox.textContent = message;
+                errorBox.hidden = false;
+            }
+        }
+
+        function showCustomView() {
+            normalView.hidden = true;
+            customView.hidden = false;
+            hideCustomError();
+        }
+
+        function showNormalView() {
+            customView.hidden = true;
+            normalView.hidden = false;
+        }
+
+        function updateTotal() {
+            var total = 0;
+            var sectionTotals = { short: 0, long: 0 };
+            typeToggles.forEach(function (toggle) {
+                var countEl = customView.querySelector('[data-type-count="' + countKeyFor(toggle) + '"]');
+                if (!countEl) return;
+                var n = 0;
+                if (toggle.checked) {
+                    countEl.hidden = false;
+                    n = parseInt(countEl.querySelector("input").value, 10);
+                    if (isNaN(n) || n < 0) n = 0;
+                } else {
+                    countEl.hidden = true;
+                }
+                total += n;
+                if (toggle.dataset.marks && sectionTotals.hasOwnProperty(toggle.dataset.type)) {
+                    sectionTotals[toggle.dataset.type] += n;
+                }
+            });
+            if (totalCountEl) totalCountEl.textContent = total;
+            Object.keys(sectionTotals).forEach(function (qtype) {
+                var el = customView.querySelector('[data-marks-section-total="' + qtype + '"]');
+                if (el) el.textContent = sectionTotals[qtype];
+            });
+            return total;
+        }
+
+        typeToggles.forEach(function (toggle) {
+            toggle.addEventListener("change", updateTotal);
+        });
+        customView.querySelectorAll('.custom-type-count input[type="number"]').forEach(function (input) {
+            input.addEventListener("input", updateTotal);
+        });
+        updateTotal();
+
+        customBtn.addEventListener("click", showCustomView);
+        if (backBtn) backBtn.addEventListener("click", showNormalView);
+
+        if (generateBtn) {
+            var generateDefaultHtml = generateBtn.innerHTML;
+
+            generateBtn.addEventListener("click", function () {
+                var topicsInput = document.getElementById("custom-topics");
+                var topics = topicsInput ? topicsInput.value.trim() : "";
+
+                var counts = {};
+                typeToggles.forEach(function (toggle) {
+                    if (!toggle.checked) return;
+                    var countEl = customView.querySelector('[data-type-count="' + countKeyFor(toggle) + '"] input');
+                    var n = countEl ? parseInt(countEl.value, 10) : 0;
+                    if (n <= 0) return;
+                    if (toggle.dataset.marks) {
+                        if (!counts[toggle.dataset.type]) counts[toggle.dataset.type] = {};
+                        counts[toggle.dataset.type][toggle.dataset.marks] = n;
+                    } else {
+                        counts[toggle.dataset.type] = n;
+                    }
+                });
+
+                var includeOr = includeOrCheckbox ? includeOrCheckbox.checked : false;
+
+                var difficultySelect = document.getElementById("custom-difficulty");
+                var difficulty = difficultySelect ? difficultySelect.value : "medium";
+
+                var durationSelect = document.getElementById("custom-duration");
+                var duration = durationSelect ? parseInt(durationSelect.value, 10) : 60;
+
+                var theoryPercentSelect = document.getElementById("custom-theory-percent");
+                var theoryPercent = theoryPercentSelect ? parseInt(theoryPercentSelect.value, 10) : 50;
+
+                if (!topics) {
+                    showCustomError("Enter at least one topic.");
+                    return;
+                }
+                if (Object.keys(counts).length === 0) {
+                    showCustomError("Check at least one question type and set how many questions.");
+                    return;
+                }
+
+                hideCustomError();
+                generateBtn.disabled = true;
+                generateBtn.textContent = "Generating your paper... this can take a minute";
+
+                fetch("/paper/custom/pdf", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ topics: topics, counts: counts, difficulty: difficulty, duration: duration, theory_percent: theoryPercent, include_or: includeOr }),
+                })
+                    .then(function (response) {
+                        if (!response.ok) {
+                            return response.json()
+                                .catch(function () { return {}; })
+                                .then(function (data) {
+                                    throw new Error(data.error || "Something went wrong generating the paper.");
+                                });
+                        }
+                        return response.blob();
+                    })
+                    .then(function (blob) {
+                        var url = window.URL.createObjectURL(blob);
+                        var a = document.createElement("a");
+                        a.href = url;
+                        a.download = "custom_practice_paper.pdf";
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                        window.URL.revokeObjectURL(url);
+                        showNormalView();
+                    })
+                    .catch(function (err) {
+                        showCustomError(err.message || "Something went wrong generating the paper.");
+                    })
+                    .finally(function () {
+                        generateBtn.disabled = false;
+                        generateBtn.innerHTML = generateDefaultHtml;
+                        if (window.lucide) window.lucide.createIcons();
+                    });
+            });
+        }
+    }
+
+    // ---- Custom Notes (notes.html only -- no-ops elsewhere) ----
+    var customNotesBtn = document.getElementById("custom-notes-btn");
+    var notesNormalView = document.getElementById("notes-normal-view");
+    var notesCustomView = document.getElementById("notes-custom-view");
+    if (customNotesBtn && notesNormalView && notesCustomView) {
+        var notesBackBtn = document.getElementById("custom-notes-back");
+        var notesGenerateBtn = document.getElementById("custom-notes-generate");
+        var notesErrorBox = document.getElementById("custom-notes-error");
+
+        function hideNotesError() {
+            if (notesErrorBox) {
+                notesErrorBox.hidden = true;
+                notesErrorBox.textContent = "";
+            }
+        }
+
+        function showNotesError(message) {
+            if (notesErrorBox) {
+                notesErrorBox.textContent = message;
+                notesErrorBox.hidden = false;
+            }
+        }
+
+        function showNotesCustomView() {
+            notesNormalView.hidden = true;
+            notesCustomView.hidden = false;
+            hideNotesError();
+        }
+
+        function showNotesNormalView() {
+            notesCustomView.hidden = true;
+            notesNormalView.hidden = false;
+        }
+
+        customNotesBtn.addEventListener("click", showNotesCustomView);
+        if (notesBackBtn) notesBackBtn.addEventListener("click", showNotesNormalView);
+
+        if (notesGenerateBtn) {
+            var notesGenerateDefaultHtml = notesGenerateBtn.innerHTML;
+
+            notesGenerateBtn.addEventListener("click", function () {
+                var topicsInput = document.getElementById("custom-notes-topics");
+                var topics = topicsInput ? topicsInput.value.trim() : "";
+                var folderSelect = document.getElementById("custom-notes-folder");
+                var folderId = folderSelect ? folderSelect.value : "";
+
+                if (!topics) {
+                    showNotesError("Enter at least one topic.");
+                    return;
+                }
+
+                hideNotesError();
+                notesGenerateBtn.disabled = true;
+                notesGenerateBtn.textContent = "Generating your notes... this can take a minute";
+
+                fetch("/notes/custom/pdf", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ topics: topics, folder_id: folderId }),
+                })
+                    .then(function (response) {
+                        if (!response.ok) {
+                            return response.json()
+                                .catch(function () { return {}; })
+                                .then(function (data) {
+                                    throw new Error(data.error || "Something went wrong generating the notes.");
+                                });
+                        }
+                        return response.blob();
+                    })
+                    .then(function (blob) {
+                        var url = window.URL.createObjectURL(blob);
+                        var a = document.createElement("a");
+                        a.href = url;
+                        a.download = "custom_notes.pdf";
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                        window.URL.revokeObjectURL(url);
+                        showNotesNormalView();
+                    })
+                    .catch(function (err) {
+                        showNotesError(err.message || "Something went wrong generating the notes.");
+                    })
+                    .finally(function () {
+                        notesGenerateBtn.disabled = false;
+                        notesGenerateBtn.innerHTML = notesGenerateDefaultHtml;
+                        if (window.lucide) window.lucide.createIcons();
+                    });
+            });
+        }
+    }
+
+    // ---- Custom Notes folder rename toggle (history_custom_notes.html only) ----
+    document.querySelectorAll(".folder-card").forEach(function (card) {
+        var viewEl = card.querySelector(".folder-card-view");
+        var editEl = card.querySelector(".folder-card-edit");
+        var renameBtn = card.querySelector(".folder-rename-btn");
+        var cancelBtn = card.querySelector(".folder-cancel-btn");
+        if (!viewEl || !editEl || !renameBtn) return;
+
+        renameBtn.addEventListener("click", function () {
+            viewEl.hidden = true;
+            editEl.hidden = false;
+            var input = editEl.querySelector("input[type='text']");
+            if (input) {
+                input.focus();
+                input.select();
+            }
+        });
+
+        if (cancelBtn) {
+            cancelBtn.addEventListener("click", function () {
+                editEl.hidden = true;
+                viewEl.hidden = false;
+            });
+        }
+    });
+
+    // ---- "Topics Tracked" dashboard stat -> popup listing every tracked topic (index.html only) ----
+    var topicsTrackedBtn = document.getElementById("topics-tracked-btn");
+    var topicsTrackedOverlay = document.getElementById("topics-tracked-overlay");
+    if (topicsTrackedBtn && topicsTrackedOverlay) {
+        var topicsTrackedClose = document.getElementById("topics-tracked-close");
+
+        function openTopicsTracked() {
+            topicsTrackedOverlay.hidden = false;
+            topicsTrackedOverlay.setAttribute("aria-hidden", "false");
+        }
+
+        function closeTopicsTracked() {
+            topicsTrackedOverlay.hidden = true;
+            topicsTrackedOverlay.setAttribute("aria-hidden", "true");
+        }
+
+        topicsTrackedBtn.addEventListener("click", openTopicsTracked);
+        if (topicsTrackedClose) topicsTrackedClose.addEventListener("click", closeTopicsTracked);
+        topicsTrackedOverlay.addEventListener("click", function (event) {
+            if (event.target === topicsTrackedOverlay) closeTopicsTracked();
+        });
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape" && !topicsTrackedOverlay.hidden) closeTopicsTracked();
+        });
+    }
+
+    if (window.lucide) window.lucide.createIcons();
+})();
+
+// ---- Liquid-wave cursor hover (signature interaction) ----
+// A soft radial glow tracks the cursor across dock items, liquid-glass
+// surfaces, primary/secondary buttons and every card (see the matching
+// ::before/::after rules in style.css). The same delegated pointermove also
+// drives two further cursor-reactive effects on the subset of elements they
+// apply to: a gentle tilt-toward-cursor on cards, and a small magnetic nudge
+// on primary buttons. All three share one rAF-throttled listener rather than
+// three separate ones, so the cost stays flat no matter how many reactive
+// elements are on a page. Skipped entirely when the user prefers reduced
+// motion -- the CSS already disables the transition/opacity change in that
+// case, but not attaching the listener at all avoids the per-move work too.
+(function () {
+    var reduceMotionQuery = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (reduceMotionQuery && reduceMotionQuery.matches) return;
+
+    // Tilt and the magnetic nudge are cursor-precision effects -- only worth
+    // doing with a real mouse/trackpad, where "toward the cursor" is a
+    // single, stable point. On touch there's no hover to begin with (every
+    // pointermove here already bails on touch pointers below); this query
+    // is what gates a fine-pointer mouse on a narrow/touch-capable laptop
+    // the same way the CSS's own (hover: hover) and (pointer: fine) guards
+    // do, so JS and CSS never disagree about when these are "on".
+    var fineHoverQuery = window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)");
+    var fineHover = !fineHoverQuery || fineHoverQuery.matches;
+
+    var SELECTOR = ".dock-item, .liquid-glass, .btn-primary, .btn-secondary, .card, .stat-card";
+    var TILT_SELECTOR = ".card, .stat-card";
+    var MAGNET_SELECTOR = ".btn-primary";
+    var TILT_MAX_DEG = 5;
+    var MAGNET_MAX_PX = 6;
+
+    var pendingEvent = null;
+    var rafId = null;
+    var tiltEl = null;
+    var magnetEl = null;
+
+    function settle(el, props) {
+        if (!el) return;
+        for (var i = 0; i < props.length; i++) el.style.removeProperty(props[i]);
+    }
+
+    function applyPending() {
+        rafId = null;
+        if (!pendingEvent) return;
+        var el = pendingEvent.el;
+        var x = pendingEvent.x;
+        var y = pendingEvent.y;
+        var rect = el.getBoundingClientRect();
+
+        if (rect.width && rect.height) {
+            var mx = ((x - rect.left) / rect.width) * 100;
+            var my = ((y - rect.top) / rect.height) * 100;
+            el.style.setProperty("--mx", mx + "%");
+            el.style.setProperty("--my", my + "%");
+
+            if (fineHover && el.matches(TILT_SELECTOR)) {
+                // Offset from center, normalized to roughly [-1, 1] on each
+                // axis, then capped to a small rotation -- enough to read
+                // as "leaning toward you", never enough to hurt readability.
+                var nx = (x - rect.left) / rect.width - 0.5;
+                var ny = (y - rect.top) / rect.height - 0.5;
+                el.style.setProperty("--tilt-y", (nx * 2 * TILT_MAX_DEG).toFixed(2) + "deg");
+                el.style.setProperty("--tilt-x", (ny * -2 * TILT_MAX_DEG).toFixed(2) + "deg");
+                if (tiltEl && tiltEl !== el) settle(tiltEl, ["--tilt-x", "--tilt-y"]);
+                tiltEl = el;
+            } else if (tiltEl && tiltEl !== el) {
+                settle(tiltEl, ["--tilt-x", "--tilt-y"]);
+                tiltEl = null;
+            }
+
+            if (fineHover && el.matches(MAGNET_SELECTOR)) {
+                var dx = x - (rect.left + rect.width / 2);
+                var dy = y - (rect.top + rect.height / 2);
+                var nudgeX = Math.max(-1, Math.min(1, dx / (rect.width / 2))) * MAGNET_MAX_PX;
+                var nudgeY = Math.max(-1, Math.min(1, dy / (rect.height / 2))) * MAGNET_MAX_PX;
+                el.style.setProperty("--magnet-x", nudgeX.toFixed(2) + "px");
+                el.style.setProperty("--magnet-y", nudgeY.toFixed(2) + "px");
+                if (magnetEl && magnetEl !== el) settle(magnetEl, ["--magnet-x", "--magnet-y"]);
+                magnetEl = el;
+            } else if (magnetEl && magnetEl !== el) {
+                settle(magnetEl, ["--magnet-x", "--magnet-y"]);
+                magnetEl = null;
+            }
+        }
+        pendingEvent = null;
+    }
+
+    document.addEventListener(
+        "pointermove",
+        function (event) {
+            if (event.pointerType === "touch") return;
+            var el = event.target.closest ? event.target.closest(SELECTOR) : null;
+            if (!el) {
+                // Cursor moved off every reactive element at once (e.g. onto
+                // plain page background) -- settle whichever elements were
+                // mid-effect instead of leaving them pinned at their last
+                // offset until some other element happens to re-trigger.
+                if (tiltEl) {
+                    settle(tiltEl, ["--tilt-x", "--tilt-y"]);
+                    tiltEl = null;
+                }
+                if (magnetEl) {
+                    settle(magnetEl, ["--magnet-x", "--magnet-y"]);
+                    magnetEl = null;
+                }
+                return;
+            }
+            pendingEvent = { el: el, x: event.clientX, y: event.clientY };
+            if (rafId === null) rafId = requestAnimationFrame(applyPending);
+        },
+        { passive: true }
+    );
+})();
+
+// ---- Liquid ripple (signature interaction) ----
+// A short-lived span spawned at the cursor's entry point on every
+// liquid-reactive surface, expanding outward and fading -- the "subtle
+// ripple that spreads outward" from the brief. Triggered on pointerenter
+// rather than click so it reads as a hover reaction, not a click
+// acknowledgement; gated to fine-pointer hover for the same reason the
+// tilt/magnet effects above are, and skipped under reduced motion.
+(function () {
+    var reduceMotionQuery = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (reduceMotionQuery && reduceMotionQuery.matches) return;
+
+    var fineHoverQuery = window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)");
+    if (fineHoverQuery && !fineHoverQuery.matches) return;
+
+    var SELECTOR = ".dock-item, .liquid-glass, .btn-primary, .btn-secondary, .card, .stat-card";
+
+    function spawnRipple(el, x, y) {
+        var rect = el.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+        var size = Math.max(rect.width, rect.height) * 1.6;
+        var span = document.createElement("span");
+        span.className = "liquid-ripple";
+        span.style.width = size + "px";
+        span.style.height = size + "px";
+        span.style.left = x - rect.left - size / 2 + "px";
+        span.style.top = y - rect.top - size / 2 + "px";
+        span.addEventListener("animationend", function () {
+            span.remove();
+        });
+        el.appendChild(span);
+    }
+
+    document.addEventListener(
+        "pointerenter",
+        function (event) {
+            if (event.pointerType === "touch") return;
+            var el = event.target.closest ? event.target.closest(SELECTOR) : null;
+            if (!el) return;
+            spawnRipple(el, event.clientX, event.clientY);
+        },
+        { passive: true, capture: true }
+    );
+})();
+
+// ---- Dock magnetic magnification ----
+// macOS-Dock-style magnification: every item in the floating horizontal bar
+// scales up and lifts slightly as the cursor approaches, with a falloff
+// based on horizontal distance from the cursor to each item's center, and
+// settles back to neutral via the dock-item transition when the cursor
+// leaves. Scoped to the dock element itself rather than delegated through
+// the document, since it needs to touch every item on each move, not just
+// the one under the cursor.
+(function () {
+    var dock = document.getElementById("dock");
+    if (!dock) return;
+
+    var reduceMotionQuery = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (reduceMotionQuery && reduceMotionQuery.matches) return;
+
+    var fineHoverQuery = window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)");
+    if (fineHoverQuery && !fineHoverQuery.matches) return;
+
+    var RADIUS = 90; // px of influence along the row
+    var MAX_SCALE = 1.22;
+    var MAX_LIFT = 7; // px
+
+    var rafId = null;
+    var pendingXY = null;
+
+    function settleAll() {
+        var items = dock.querySelectorAll(".dock-item");
+        for (var i = 0; i < items.length; i++) {
+            items[i].style.removeProperty("--dock-scale");
+            items[i].style.removeProperty("--dock-lift");
+        }
+    }
+
+    function apply() {
+        rafId = null;
+        if (!pendingXY) return;
+        var dockRect = dock.getBoundingClientRect();
+        // A magnified item should rise AWAY from the edge the dock is
+        // pinned to, like a real dock icon -- down, away from a top bar;
+        // up, away from a bottom bar. Read which edge it's currently
+        // anchored to from its own position rather than hardcoding a
+        // breakpoint, since that's exactly what .dock's CSS already
+        // decides (top on desktop, bottom on mobile; see style.css).
+        var liftSign = dockRect.top + dockRect.height / 2 < window.innerHeight / 2 ? 1 : -1;
+        var items = dock.querySelectorAll(".dock-item");
+        for (var i = 0; i < items.length; i++) {
+            var itemRect = items[i].getBoundingClientRect();
+            var center = itemRect.left + itemRect.width / 2;
+            var dist = Math.abs(pendingXY.x - center);
+            var factor = Math.max(0, 1 - dist / RADIUS);
+            items[i].style.setProperty("--dock-scale", (1 + factor * (MAX_SCALE - 1)).toFixed(3));
+            items[i].style.setProperty("--dock-lift", (liftSign * factor * MAX_LIFT).toFixed(2) + "px");
+        }
+        pendingXY = null;
+    }
+
+    dock.addEventListener(
+        "pointermove",
+        function (event) {
+            if (event.pointerType === "touch") return;
+            pendingXY = { x: event.clientX, y: event.clientY };
+            if (rafId === null) rafId = requestAnimationFrame(apply);
+        },
+        { passive: true }
+    );
+
+    dock.addEventListener("pointerleave", function () {
+        pendingXY = null;
+        if (rafId !== null) {
+            cancelAnimationFrame(rafId);
+            rafId = null;
+        }
+        settleAll();
+    });
+})();

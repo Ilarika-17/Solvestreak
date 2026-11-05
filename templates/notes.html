@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}Topic Notes · Solvestreak{% endblock %}
+{% block page_title %}Topic Notes{% endblock %}
+{% block page_subtitle %}Study flow / AI study workspace{% endblock %}
+
+{% block header_actions %}
+<button type="button" id="custom-notes-btn" class="btn btn-secondary btn-sm">
+    <i data-lucide="sliders-horizontal"></i>
+    Custom Notes
+</button>
+{% if notes and notes.notes %}
+<form action="/paper" method="post" class="js-loading-form" data-loading-text="Building your practice paper...">
+    <button type="submit" class="btn btn-primary btn-sm">
+        Generate Practice Paper
+        <i data-lucide="arrow-right"></i>
+    </button>
+</form>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+{% set note_list = notes.notes if notes and notes.notes else [] %}
+
+<div id="notes-normal-view">
+{% if note_list %}
+<div class="notes-layout">
+    <aside class="topic-rail card" aria-label="Topics in this guide">
+        <p class="nav-label">Topics</p>
+        {% for note in note_list %}
+        <a class="rail-link" href="#note-{{ loop.index }}">{{ note.topic }}</a>
+        {% endfor %}
+    </aside>
+
+    <div class="notes-stack">
+        {% for note in note_list %}
+        <article class="card note-card" id="note-{{ loop.index }}">
+            <header class="note-head">
+                <div>
+                    <p class="eyebrow">Core Concept</p>
+                    <h2>{{ note.topic }}</h2>
+                </div>
+            </header>
+
+            <p class="note-body">{{ note.explanation }}</p>
+
+            <details class="note-details" open>
+                <summary>Recognize this pattern when...</summary>
+                <p class="muted">Key Patterns</p>
+                <ul class="pattern-list">
+                    {% for pattern in note.key_patterns %}
+                    <li>{{ pattern }}</li>
+                    {% endfor %}
+                </ul>
+            </details>
+
+            <div class="code-block">
+                <div class="code-toolbar">
+                    <span>Reusable Python Pattern</span>
+                    <button type="button" class="btn btn-ghost btn-sm" data-copy aria-label="Copy code">
+                        <i data-lucide="copy"></i>
+                        Copy
+                    </button>
+                </div>
+                <pre><code>{{ note.code_skeleton }}</code></pre>
+            </div>
+        </article>
+        {% endfor %}
+
+        <form action="/paper" method="post" class="cta-row js-loading-form" data-loading-text="Building your practice paper...">
+            <button type="submit" class="btn btn-primary">
+                Generate Practice Paper
+                <i data-lucide="arrow-right"></i>
+            </button>
+        </form>
+    </div>
+</div>
+{% else %}
+<div class="empty-state card">
+    <i data-lucide="book-open"></i>
+    <h3>No notes yet.</h3>
+    <p class="muted">Start from the dashboard to generate an AI study guide for your weak topics.</p>
+    <form action="/notes" method="post" class="js-loading-form" data-loading-text="Generating topic notes...">
+        <button type="submit" class="btn btn-primary">Generate Notes</button>
+    </form>
+</div>
+{% endif %}
+</div>
+
+<div id="notes-custom-view" class="card form-card" hidden>
+    <div class="section-head" style="margin-bottom: 1rem;">
+        <h3>Custom Notes</h3>
+        <p class="muted">Pick your own topics -- definitions, examples, syntax, tables, mnemonics and flowcharts are included wherever they help. Downloads straight to PDF and is saved to the folder you pick below.</p>
+    </div>
+
+    <div id="custom-notes-error" class="flash flash-error" hidden></div>
+
+    <div class="field">
+        <label for="custom-notes-topics">Topics</label>
+        <input type="text" id="custom-notes-topics" placeholder="e.g. Normal Distribution, 8086 Addressing Modes">
+        <p class="helper">Separate topics with commas.</p>
+    </div>
+
+    <div class="field">
+        <label for="custom-notes-folder">Save to folder</label>
+        <select id="custom-notes-folder">
+            <option value="">Uncategorized</option>
+            {% for folder in note_folders %}
+            <option value="{{ folder.id }}">{{ folder.name }}</option>
+            {% endfor %}
+        </select>
+        <p class="helper">Manage folders from History &gt; Custom Notes.</p>
+    </div>
+
+    <div class="cta-row">
+        <button type="button" id="custom-notes-back" class="btn btn-secondary">
+            <i data-lucide="arrow-left"></i>
+            Go Back
+        </button>
+        <button type="button" id="custom-notes-generate" class="btn btn-primary">
+            Generate &amp; Download PDF
+            <i data-lucide="download"></i>
+        </button>
+    </div>
+</div>
+{% endblock %}

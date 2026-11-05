@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Deadline Plan · Solvestreak{% endblock %}
+{% block page_title %}Build Your Study Plan{% endblock %}
+{% block page_subtitle %}Planner / Turn a deadline into a schedule{% endblock %}
+
+{% block content %}
+<section class="hero compact">
+    <p class="lede">Turn your deadline into a realistic coding schedule.</p>
+</section>
+
+<div class="deadline-layout">
+    <form action="/deadline" method="post" class="card form-card js-loading-form" data-loading-text="Building your study calendar...">
+        <div class="field">
+            <label for="deadline">Deadline</label>
+            <input type="date" id="deadline" name="deadline" required>
+            <p class="helper">Choose a future date. Busy calendar days stay free of practice.</p>
+        </div>
+
+        <div class="field">
+            <label for="topics">Topics to focus on</label>
+            <input type="text" id="topics" name="topics" required value="{{ suggested_topics|default('') }}" placeholder="Type Here...">
+            <p class="helper">Separate topics with commas.</p>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Generate My Plan
+            <i data-lucide="arrow-right"></i>
+        </button>
+    </form>
+
+    <aside class="card deadlines-rail" aria-label="Upcoming deadlines from your calendar">
+        <div class="section-head" style="margin-bottom: 0.9rem;">
+            <h3>Upcoming Deadlines</h3>
+            <p class="muted">From your Google Calendar — exams, vivas, tests, and anything else flagged as a deadline, over the next 90 days.</p>
+        </div>
+
+        {% if calendar_error %}
+        <div class="empty-state" style="padding: 1.5rem 0.5rem;">
+            <i data-lucide="calendar-x"></i>
+            <h3 style="font-size: 0.95rem;">Couldn't load your calendar</h3>
+            <p class="muted" style="font-size: 0.82rem;">{{ calendar_error }}</p>
+        </div>
+        {% elif candidates %}
+        <ul class="deadline-list">
+            {% for c in candidates %}
+            <li class="deadline-item" data-iso-date="{{ c.date }}">
+                <span class="deadline-date">
+                    <span data-dom></span>
+                    <span data-moy></span>
+                </span>
+                <span class="deadline-title">{{ c.title }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="empty-state" style="padding: 1.5rem 0.5rem;">
+            <i data-lucide="calendar-check"></i>
+            <h3 style="font-size: 0.95rem;">Nothing flagged yet</h3>
+            <p class="muted" style="font-size: 0.82rem;">Events with "exam", "viva", "test", "deadline" and similar words in the title will show up here.</p>
+        </div>
+        {% endif %}
+    </aside>
+</div>
+{% endblock %}

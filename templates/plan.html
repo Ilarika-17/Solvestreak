@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Practice Plan · Solvestreak{% endblock %}
+{% block page_title %}Your Practice Plan{% endblock %}
+{% block page_subtitle %}Planner / Day-by-day timeline{% endblock %}
+
+{% block header_actions %}
+<a class="btn btn-secondary btn-sm" href="/deadline">Adjust plan</a>
+{% endblock %}
+
+{% block content %}
+{% if skeleton %}
+<ol class="timeline">
+    {% for day in skeleton %}
+    <li class="timeline-item card {% if day.status == 'busy' %}is-busy{% else %}is-free{% endif %}" data-iso-date="{{ day.date }}">
+        <div class="timeline-date">
+            <span class="dow" data-dow>{{ day.date }}</span>
+            <span class="dom" data-dom>{{ day.date[8:10] }}</span>
+            <span class="moy" data-moy>{{ day.date[5:7] }}</span>
+        </div>
+        <div class="timeline-body">
+            {% if day.status == "busy" %}
+            <span class="badge">Busy</span>
+            <h3>{{ day.date }}</h3>
+            <p class="muted">You have a commitment that day. No practice planned.</p>
+            {% else %}
+            <span class="badge badge-success">Free</span>
+            {% if day.topic %}<h3>{{ day.topic }}</h3>{% else %}<h3>Study day</h3>{% endif %}
+            <p>{{ day.task or "Practice session" }}</p>
+            {% endif %}
+        </div>
+    </li>
+    {% endfor %}
+</ol>
+{% else %}
+<div class="empty-state card">
+    <i data-lucide="calendar-days"></i>
+    <h3>No plan to show.</h3>
+    <a class="btn btn-primary" href="/deadline">Build a deadline plan</a>
+</div>
+{% endif %}
+{% endblock %}

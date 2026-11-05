@@ -1,0 +1,268 @@
+<!doctype html>
+{%- set active_theme = ((current_user.theme if current_user else none) or 'dark') -%}
+{%- set active_palette = ((current_user.palette if current_user else none) or 'blue-moon') -%}
+<html lang="en" data-theme="{{ active_theme }}"{% if active_palette != 'classic' %} data-palette="{{ active_palette }}"{% endif %}>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Solvestreak{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- No pre-paint localStorage script needed here anymore: the theme and
+         colour palette are now rendered straight from THIS account's saved
+         choice (current_user.theme / current_user.palette, see auth.py),
+         so the very first paint is already correct with zero flash and no
+         risk of one account's browser-local choice leaking into another's
+         session. See app.js for how a change here gets saved back to the
+         account (POST /settings/theme) instead of only to localStorage. -->
+</head>
+<body>
+    <div class="app-shell">
+        <div class="workspace">
+            <header class="topbar">
+                <div class="topbar-copy">
+                    <div class="topbar-title-row">
+                        <h1>{% block page_title %}Solvestreak{% endblock %}</h1>
+
+                        {% block header_streak %}{% endblock %}
+
+                        <!-- Primary nav dock -- sits beside the page title
+                             instead of floating as its own bar above the
+                             page (per the latest layout tweak). Every
+                             destination that used to live in the sidebar is
+                             still here, restyled as liquid-glass capsules
+                             (see dockMagnet in app.js for the magnetic
+                             magnification). On mobile it detaches back into
+                             a floating bottom bar -- see .dock's media query
+                             in style.css. -->
+                        <nav class="dock" id="dock" aria-label="Primary">
+                            <div class="dock-item-wrap">
+                                <a class="dock-item dock-brand liquid-glass" href="/" aria-label="Solvestreak home">
+                                    <i data-lucide="flame"></i>
+                                </a>
+                                <span class="dock-tooltip" aria-hidden="true">Solvestreak</span>
+                            </div>
+
+                            <div class="dock-divider" aria-hidden="true"></div>
+
+                            <div class="dock-items">
+                                <div class="dock-item-wrap">
+                                    <a class="dock-item liquid-glass {% if request.path == '/' %}is-active{% endif %}" href="/" aria-label="Dashboard">
+                                        <i data-lucide="layout-dashboard"></i>
+                                    </a>
+                                    <span class="dock-tooltip" aria-hidden="true">Dashboard</span>
+                                </div>
+                                <div class="dock-item-wrap">
+                                    <a class="dock-item liquid-glass {% if request.path == '/notes' %}is-active{% endif %}" href="/notes" aria-label="Notes">
+                                        <i data-lucide="book-open"></i>
+                                    </a>
+                                    <span class="dock-tooltip" aria-hidden="true">Notes</span>
+                                </div>
+                                <div class="dock-item-wrap">
+                                    <a class="dock-item liquid-glass {% if request.path == '/paper' %}is-active{% endif %}" href="/paper" aria-label="Practice Paper">
+                                        <i data-lucide="file-text"></i>
+                                    </a>
+                                    <span class="dock-tooltip" aria-hidden="true">Practice Paper</span>
+                                </div>
+                                <div class="dock-item-wrap">
+                                    <a class="dock-item liquid-glass {% if request.path == '/solutions' %}is-active{% endif %}" href="/solutions" aria-label="Solutions">
+                                        <i data-lucide="code-2"></i>
+                                    </a>
+                                    <span class="dock-tooltip" aria-hidden="true">Solutions</span>
+                                </div>
+                                <div class="dock-item-wrap">
+                                    <a class="dock-item liquid-glass {% if request.path == '/history' %}is-active{% endif %}" href="/history" aria-label="History">
+                                        <i data-lucide="history"></i>
+                                    </a>
+                                    <span class="dock-tooltip" aria-hidden="true">History</span>
+                                </div>
+                                <div class="dock-item-wrap">
+                                    <a class="dock-item liquid-glass {% if request.path == '/deadline' %}is-active{% endif %}" href="/deadline" aria-label="Deadline Plan">
+                                        <i data-lucide="calendar-days"></i>
+                                    </a>
+                                    <span class="dock-tooltip" aria-hidden="true">Deadline Plan</span>
+                                </div>
+                                {% if is_admin %}
+                                <div class="dock-item-wrap">
+                                    <a class="dock-item liquid-glass {% if request.path == '/admin' %}is-active{% endif %}" href="/admin" aria-label="Admin Dashboard">
+                                        <i data-lucide="shield"></i>
+                                    </a>
+                                    <span class="dock-tooltip" aria-hidden="true">Admin Dashboard</span>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="dock-divider" aria-hidden="true"></div>
+
+                            <div class="dock-utility">
+                                <div class="dock-item-wrap">
+                                    <button type="button" class="dock-item liquid-glass" data-theme-toggle aria-pressed="{{ 'true' if active_theme == 'dark' else 'false' }}" aria-label="Toggle theme">
+                                        <i data-lucide="moon" class="icon-moon"></i>
+                                        <i data-lucide="sun" class="icon-sun"></i>
+                                    </button>
+                                    <span class="dock-tooltip" aria-hidden="true">Toggle theme</span>
+                                </div>
+                                {% if current_user %}
+                                <div class="account-menu-wrap">
+                                    <div class="account-menu" id="account-menu" role="menu" aria-labelledby="account-trigger" hidden>
+                                        <div class="account-menu-header">
+                                            <span class="avatar" aria-hidden="true">{{ (current_user.name or current_user.email or "?")[:1]|upper }}</span>
+                                            <span>
+                                                <strong>{{ current_user.name or current_user.email or "Signed in" }}</strong>
+                                                {% if current_user.email %}<span class="muted">{{ current_user.email }}</span>{% endif %}
+                                            </span>
+                                        </div>
+                                        <div class="account-menu-divider"></div>
+                                        <a class="account-menu-item" href="{{ url_for('auth.settings') }}" role="menuitem">
+                                            <i data-lucide="settings"></i>
+                                            Settings
+                                        </a>
+                                        <div class="account-menu-divider"></div>
+                                        <a class="account-menu-item" href="{{ url_for('auth.logout') }}" role="menuitem">
+                                            <i data-lucide="log-out"></i>
+                                            Sign out
+                                        </a>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        class="dock-item liquid-glass"
+                                        id="account-trigger"
+                                        aria-label="{{ current_user.name or current_user.email or 'Account' }}"
+                                        aria-haspopup="true"
+                                        aria-expanded="false"
+                                        aria-controls="account-menu"
+                                    >
+                                        <span class="avatar" aria-hidden="true">{{ (current_user.name or current_user.email or "?")[:1]|upper }}</span>
+                                    </button>
+                                    <span class="dock-tooltip" aria-hidden="true">{{ current_user.name or current_user.email or 'Account' }}</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </nav>
+                    </div>
+                    <p class="breadcrumb">{% block page_subtitle %}AI coding practice assistant{% endblock %}</p>
+                </div>
+                <div class="topbar-actions">
+                    {% block header_actions %}{% endblock %}
+                    <a class="icon-btn" href="/" aria-label="Refresh dashboard">
+                        <i data-lucide="refresh-cw"></i>
+                    </a>
+                    {% if current_user %}
+                    <button type="button" class="icon-btn" id="feedback-btn" aria-haspopup="dialog" aria-label="Send feedback or a suggestion">
+                        <i data-lucide="message-square-plus"></i>
+                    </button>
+                    {% endif %}
+                </div>
+            </header>
+
+            <main class="content">
+                <div class="container fade-in">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                        <div class="flash-messages">
+                            {% for category, message in messages %}
+                            <div class="flash flash-{{ category }}">
+                                <i data-lucide="{{ 'check-circle' if category == 'success' else 'alert-circle' }}"></i>
+                                <span>{{ message }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    {% endwith %}
+                    {% block content %}{% endblock %}
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div class="loading-overlay" id="loading-overlay" hidden aria-hidden="true">
+        <div class="loading-card">
+            <span class="spinner" aria-hidden="true"></span>
+            <p id="loading-text">Analyzing your practice history...</p>
+        </div>
+    </div>
+
+    {% if current_user %}
+    <div class="modal-overlay" id="feedback-overlay" hidden aria-hidden="true">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="feedback-title">
+            <div class="modal-head">
+                <h3 id="feedback-title">Feedback or suggestion</h3>
+                <button type="button" class="icon-btn" id="feedback-close" aria-label="Close">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div id="feedback-error" class="flash flash-error" hidden></div>
+            <div id="feedback-success" class="flash" hidden></div>
+            <textarea
+                id="feedback-message"
+                class="feedback-textarea"
+                rows="5"
+                maxlength="{{ 4000 }}"
+                placeholder="Found a bug, or have an idea for something you'd want this app to do? Jot it down here."
+            ></textarea>
+            <div class="cta-row">
+                <button type="button" class="btn btn-secondary btn-sm" id="feedback-toggle-history">
+                    <i data-lucide="list"></i>
+                    <span id="feedback-history-toggle-label">View past feedback</span>
+                </button>
+                <button type="button" class="btn btn-primary" id="feedback-submit">
+                    Send
+                    <i data-lucide="send"></i>
+                </button>
+            </div>
+            <div id="feedback-history" class="feedback-history" hidden></div>
+        </div>
+    </div>
+
+    <!-- "Flag this question" -- a separate, lighter modal from the general
+         feedback popup above. Opened from a Flag button on a specific
+         generated question (see solutions.html), with that question's
+         run/problem/topic stashed in the hidden fields below so the report
+         lands tagged to exactly what was wrong, not just a loose note.
+         Routes into the same feedback.db as general feedback (so admins
+         review everything in one place) but through its own /feedback/flag
+         endpoint, since this one also accepts an optional screenshot file. -->
+    <div class="modal-overlay" id="flag-overlay" hidden aria-hidden="true">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="flag-title">
+            <div class="modal-head">
+                <h3 id="flag-title">Flag this question</h3>
+                <button type="button" class="icon-btn" id="flag-close" aria-label="Close">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div id="flag-error" class="flash flash-error" hidden></div>
+            <div id="flag-success" class="flash" hidden></div>
+            <p class="muted" id="flag-context-label" style="margin: 0 0 0.6rem;"></p>
+            <textarea
+                id="flag-message"
+                class="feedback-textarea"
+                rows="4"
+                maxlength="{{ 4000 }}"
+                placeholder="What's wrong with this one? e.g. wrong answer, garbled formatting, missing explanation..."
+            ></textarea>
+            <div class="field" style="margin-top: 0.75rem;">
+                <label for="flag-screenshot">Screenshot (optional)</label>
+                <input type="file" id="flag-screenshot" accept="image/png,image/jpeg,image/webp,image/gif">
+                <p class="helper">Up to 5MB. Useful for formatting bugs that are easier to show than describe.</p>
+                <div id="flag-screenshot-preview" hidden style="margin-top: 0.5rem;">
+                    <img id="flag-screenshot-preview-img" alt="Screenshot preview" style="max-width: 100%; max-height: 160px; border-radius: 8px; border: 1px solid var(--border);">
+                    <button type="button" class="btn btn-ghost btn-sm" id="flag-screenshot-remove">Remove</button>
+                </div>
+            </div>
+            <div class="cta-row">
+                <button type="button" class="btn btn-primary" id="flag-submit">
+                    Send Flag
+                    <i data-lucide="flag"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

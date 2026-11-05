@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Solvestreak{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>
+        (function () {
+            try {
+                var saved = localStorage.getItem('solvestreak-theme');
+                if (saved) {
+                    document.documentElement.setAttribute('data-theme', saved);
+                }
+            } catch (e) {}
+        })();
+    </script>
+</head>
+<body>
+    <div class="app-shell">
+        <div class="nav-overlay" id="nav-overlay" hidden></div>
+
+        <aside class="sidebar" id="sidebar">
+            <a class="brand" href="/">
+                <span class="brand-copy">
+                    <span class="brand-name">Solvestreak</span>
+                    <span class="brand-sub">AI Coding Coach</span>
+                </span>
+            </a>
+
+            <nav class="nav" aria-label="Primary">
+                <p class="nav-label">Workspace</p>
+                <a class="nav-link {% if request.path == '/' %}is-active{% endif %}" href="/">
+                    <i data-lucide="layout-dashboard"></i>
+                    Dashboard
+                </a>
+                <a class="nav-link" href="/#focus-areas">
+                    <i data-lucide="target"></i>
+                    Weak Topics
+                </a>
+
+                <p class="nav-label">Study flow</p>
+                <a class="nav-link {% if request.path == '/notes' %}is-active{% endif %}" href="/notes">
+                    <i data-lucide="book-open"></i>
+                    Notes
+                </a>
+                <a class="nav-link {% if request.path == '/paper' %}is-active{% endif %}" href="/paper">
+                    <i data-lucide="file-text"></i>
+                    Practice Paper
+                </a>
+                <a class="nav-link {% if request.path == '/solutions' %}is-active{% endif %}" href="/solutions">
+                    <i data-lucide="code-2"></i>
+                    Solutions
+                </a>
+                <a class="nav-link {% if request.path == '/history' %}is-active{% endif %}" href="/history">
+                    <i data-lucide="history"></i>
+                    History
+                </a>
+
+                <p class="nav-label">Planning</p>
+                <a class="nav-link {% if request.path == '/deadline' %}is-active{% endif %}" href="/deadline">
+                    <i data-lucide="calendar-days"></i>
+                    Deadline Plan
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false">
+                    <i data-lucide="moon" class="icon-moon"></i>
+                    <i data-lucide="sun" class="icon-sun"></i>
+                    <span class="theme-toggle-label">Dark</span>
+                </button>
+                {% if current_user %}
+                <div class="account-menu-wrap">
+                    <div class="account-menu" id="account-menu" role="menu" aria-labelledby="account-trigger" hidden>
+                        <div class="account-menu-header">
+                            <span class="avatar" aria-hidden="true">{{ (current_user.name or current_user.email or "?")[:1]|upper }}</span>
+                            <span>
+                                <strong>{{ current_user.name or current_user.email or "Signed in" }}</strong>
+                                {% if current_user.email %}<span class="muted">{{ current_user.email }}</span>{% endif %}
+                            </span>
+                        </div>
+                        <div class="account-menu-divider"></div>
+                        <a class="account-menu-item" href="{{ url_for('auth.settings') }}" role="menuitem">
+                            <i data-lucide="settings"></i>
+                            Settings
+                        </a>
+                        <div class="account-menu-divider"></div>
+                        <a class="account-menu-item" href="{{ url_for('auth.logout') }}" role="menuitem">
+                            <i data-lucide="log-out"></i>
+                            Sign out
+                        </a>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="profile-chip"
+                        id="account-trigger"
+                        aria-haspopup="true"
+                        aria-expanded="false"
+                        aria-controls="account-menu"
+                    >
+                        <span class="avatar" aria-hidden="true">{{ (current_user.name or current_user.email or "?")[:1]|upper }}</span>
+                        <span>
+                            <strong>{{ current_user.name or current_user.email or "Signed in" }}</strong>
+                            <span class="muted">{{ current_user.email or "Signed in" }}</span>
+                        </span>
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </aside>
+
+        <div class="workspace">
+            <header class="topbar">
+                <button type="button" class="icon-btn mobile-nav-btn" id="nav-open" aria-label="Open navigation">
+                    <i data-lucide="menu"></i>
+                </button>
+                <div class="topbar-copy">
+                    <h1>{% block page_title %}Solvestreak{% endblock %}</h1>
+                    <p class="breadcrumb">{% block page_subtitle %}AI coding practice assistant{% endblock %}</p>
+                </div>
+                <div class="topbar-actions">
+                    {% block header_actions %}{% endblock %}
+                    <a class="icon-btn" href="/" aria-label="Refresh dashboard">
+                        <i data-lucide="refresh-cw"></i>
+                    </a>
+                    <button type="button" class="icon-btn" data-theme-toggle aria-label="Toggle color theme">
+                        <i data-lucide="moon" class="icon-moon"></i>
+                        <i data-lucide="sun" class="icon-sun"></i>
+                    </button>
+                    {% if current_user %}
+                    <span class="avatar avatar-sm" aria-hidden="true">{{ (current_user.name or current_user.email or "?")[:1]|upper }}</span>
+                    {% endif %}
+                </div>
+            </header>
+
+            <main class="content">
+                <div class="container fade-in">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                        <div class="flash-messages">
+                            {% for category, message in messages %}
+                            <div class="flash flash-{{ category }}">
+                                <i data-lucide="{{ 'check-circle' if category == 'success' else 'alert-circle' }}"></i>
+                                <span>{{ message }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    {% endwith %}
+                    {% block content %}{% endblock %}
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div class="loading-overlay" id="loading-overlay" hidden aria-hidden="true">
+        <div class="loading-card">
+            <span class="spinner" aria-hidden="true"></span>
+            <p id="loading-text">Analyzing your practice history...</p>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

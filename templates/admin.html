@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Admin · Solvestreak{% endblock %}
+{% block page_title %}Admin Dashboard{% endblock %}
+{% block page_subtitle %}Users, activity, and feedback{% endblock %}
+
+{% block content %}
+<section class="stat-row" aria-label="Admin stats">
+    <article class="stat-card">
+        <p class="stat-label">Total Users</p>
+        <p class="stat-value">{{ total_users }}</p>
+    </article>
+    <article class="stat-card">
+        <p class="stat-label">Active Now</p>
+        <p class="stat-value">{{ active_now }}</p>
+    </article>
+    <article class="stat-card">
+        <p class="stat-label">Feedback Notes</p>
+        <p class="stat-value">{{ total_feedback }}</p>
+    </article>
+</section>
+
+<section class="card" style="margin-top: 1.5rem;">
+    <h3>Today's AI Usage</h3>
+    <p class="muted">
+        {{ today_global_calls }} of {{ daily_global_call_budget }} shared daily provider calls used.
+        Each person gets {{ daily_generations_per_user }} generations/day (you're exempt from this
+        on your admin account, but not from the shared budget above).
+    </p>
+    {% if today_global_calls >= daily_global_call_budget %}
+    <div class="flash flash-error" style="margin-top: 0.75rem;">
+        <i data-lucide="alert-circle"></i>
+        <span>The shared daily budget is used up -- new generations are paused for everyone until it resets at midnight.</span>
+    </div>
+    {% endif %}
+</section>
+
+<section class="card" style="margin-top: 1.5rem;">
+    <h3>Users</h3>
+    {% if users %}
+    <div class="stack">
+        {% for u in users %}
+        <article class="card problem-card">
+            <header class="problem-head">
+                <span class="rank">{{ u.name or u.email or "Unknown" }}</span>
+                <div class="meta-row">
+                    {% if u.is_active %}
+                    <span class="badge badge-success">Active now</span>
+                    {% endif %}
+                    <span class="badge">{{ u.today_generations }} generation{{ "s" if u.today_generations != 1 else "" }} today</span>
+                    {% if u.leetcode_username %}
+                    <span class="badge">LeetCode: {{ u.leetcode_username }}</span>
+                    {% endif %}
+                </div>
+            </header>
+            <p class="muted">{{ u.email or "No email on file" }}</p>
+            <p class="muted">Joined {{ u.created_at or "unknown" }} &middot; Last seen {{ u.last_seen_at or "never" }}</p>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="muted">No one has signed in yet.</p>
+    {% endif %}
+</section>
+
+<section class="card" style="margin-top: 1.5rem;">
+    <h3>Feedback &amp; Suggestions</h3>
+    {% if feedback_items %}
+    <div class="stack">
+        {% for item in feedback_items %}
+        <article class="card problem-card">
+            <header class="problem-head">
+                <span class="rank">{{ item.user_name }}</span>
+                <div class="meta-row">
+                    {% if item.context %}<span class="badge badge-warning"><i data-lucide="flag"></i> Flagged Question</span>{% endif %}
+                    {% if item.user_email %}<span class="badge">{{ item.user_email }}</span>{% endif %}
+                </div>
+            </header>
+            {% if item.context %}<p class="muted" style="margin-bottom: 0.3rem;"><strong>{{ item.context }}</strong></p>{% endif %}
+            <p>{{ item.message }}</p>
+            {% if item.has_screenshot %}
+            <a class="btn btn-secondary btn-sm" href="{{ url_for('admin_feedback_screenshot', feedback_id=item.id) }}" target="_blank" rel="noopener" style="margin-top: 0.5rem;">
+                <i data-lucide="image"></i>
+                View Screenshot
+            </a>
+            {% endif %}
+            <p class="muted">{{ item.created_at }}</p>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state card">
+        <i data-lucide="message-square-plus"></i>
+        <h3>No feedback yet.</h3>
+        <p class="muted">Notes people send from the feedback icon will show up here.</p>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

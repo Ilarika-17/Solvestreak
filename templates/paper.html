@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+{% block title %}Practice Paper · Solvestreak{% endblock %}
+{% block page_title %}Practice Assessment{% endblock %}
+{% block page_subtitle %}Study flow / Test yourself before viewing solutions{% endblock %}
+
+{% block header_actions %}
+<button type="button" id="custom-paper-btn" class="btn btn-secondary btn-sm">
+    <i data-lucide="sliders-horizontal"></i>
+    Custom Practice Paper
+</button>
+{% if paper and paper.problems %}
+<form action="/solutions" method="post" class="js-loading-form" data-loading-text="Writing solutions...">
+    <button type="submit" class="btn btn-secondary btn-sm">View Solutions</button>
+</form>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+{% set problems = paper.problems if paper and paper.problems else [] %}
+
+<div id="paper-normal-view">
+{% if problems %}
+<section class="hero compact">
+    <div>
+        <p class="lede">Test yourself before viewing the solutions.</p>
+        <div class="meta-row">
+            <span class="badge">{{ problems|length }} problems</span>
+            {% set topics = problems|map(attribute='topic')|unique|list %}
+            {% for topic in topics %}
+            <span class="badge">{{ topic }}</span>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+{% if run_id %}
+<div class="card mock-test-panel" id="mock-test-panel" data-run-id="{{ run_id }}">
+    <div class="mock-test-idle" id="mock-test-idle">
+        <div>
+            <h3 style="margin: 0 0 0.2rem;">Timed Mock Test</h3>
+            <p class="muted" style="margin: 0;">Simulate real interview pressure -- start a countdown and see how you do.</p>
+        </div>
+        <div class="mock-test-start-row">
+            <select id="mock-test-duration" aria-label="Mock test duration">
+                <option value="15">15 minutes</option>
+                <option value="30" selected>30 minutes</option>
+                <option value="45">45 minutes</option>
+                <option value="60">60 minutes</option>
+            </select>
+            <button type="button" class="btn btn-primary btn-sm" id="mock-test-start">
+                <i data-lucide="timer"></i>
+                Start Timed Mock Test
+            </button>
+        </div>
+    </div>
+    <div class="mock-test-running" id="mock-test-running" hidden>
+        <div>
+            <p class="muted" style="margin: 0 0 0.2rem;">Time remaining</p>
+            <div class="mock-test-clock" id="mock-test-clock">00:00</div>
+        </div>
+        <button type="button" class="btn btn-secondary btn-sm" id="mock-test-finish">
+            <i data-lucide="flag-triangle-right"></i>
+            Finish Test
+        </button>
+    </div>
+    <div class="mock-test-result" id="mock-test-result" hidden></div>
+</div>
+{% endif %}
+
+<div class="stack">
+    {% for problem in problems %}
+    {% set diff = (problem.difficulty or '')|lower %}
+    <article class="card problem-card">
+        <header class="problem-head">
+            <span class="rank">Problem {{ '%02d'|format(problem.id) }}</span>
+            <div class="meta-row">
+                <span class="badge">{{ problem.topic }}</span>
+                <span class="badge badge-{{ diff }}">{{ problem.difficulty }}</span>
+            </div>
+        </header>
+        <h2>{{ problem.title }}</h2>
+        <p class="eyebrow">Problem statement</p>
+        <p class="statement">{{ problem.statement }}</p>
+        <div class="try-box">
+            <label class="eyebrow" for="scratch-{{ problem.id }}">Try it yourself</label>
+            <textarea id="scratch-{{ problem.id }}" rows="6" placeholder="Sketch an approach or write pseudocode here. This stays on your device."></textarea>
+        </div>
+    </article>
+    {% endfor %}
+</div>
+
+<div class="cta-panel card">
+    <div>
+        <h3>Ready to check your work?</h3>
+        <p class="muted">Solutions are kept separate so you can attempt the paper first.</p>
+    </div>
+    <div class="cta-row">
+        {% if run_id %}
+        <a class="btn btn-secondary" href="/history/{{ run_id }}/pdf">
+            <i data-lucide="download"></i>
+            Download PDF
+        </a>
+        {% endif %}
+        <form action="/solutions" method="post" class="js-loading-form" data-loading-text="Writing solutions...">
+            <button type="submit" class="btn btn-primary">
+                View Solutions
+                <i data-lucide="arrow-right"></i>
+            </button>
+        </form>
+    </div>
+</div>
+{% else %}
+<div class="empty-state card">
+    <i data-lucide="file-text"></i>
+    <h3>No practice paper yet.</h3>
+    <p class="muted">Generate notes first, then create an assessment from your weak topics.</p>
+    <a class="btn btn-primary" href="/notes">Go to Notes</a>
+</div>
+{% endif %}
+</div>
+
+<div id="paper-custom-view" class="card form-card" hidden>
+    <div class="section-head" style="margin-bottom: 1rem;">
+        <h3>Custom Practice Paper</h3>
+        <p class="muted">Pick your own topics and question mix, and it downloads straight to PDF -- notes/weak-topics not required.</p>
+    </div>
+
+    <div id="custom-paper-error" class="flash flash-error" hidden></div>
+
+    <div class="field">
+        <label for="custom-topics">Topics</label>
+        <input type="text" id="custom-topics" placeholder="e.g. Dynamic Programming, Graphs, Binary Search">
+        <p class="helper">Separate topics with commas.</p>
+    </div>
+
+    <div class="field">
+        <label>Question types</label>
+
+        <div class="custom-type-row">
+            <label class="custom-type-check">
+                <input type="checkbox" class="custom-type-toggle" data-type="mcq">
+                Multiple Choice
+            </label>
+            <span class="custom-type-count" data-type-count="mcq" hidden>
+                <input type="number" min="1" max="20" value="5" aria-label="Number of multiple choice questions">
+                questions
+            </span>
+        </div>
+
+        <div class="custom-marks-section">
+            <div class="custom-marks-section-head">
+                <span>Short Answer Questions</span>
+                <span class="muted">Total: <strong data-marks-section-total="short">0</strong></span>
+            </div>
+            {% for marks in (1, 2, 3) %}
+            <div class="custom-type-row custom-marks-row">
+                <label class="custom-type-check">
+                    <input type="checkbox" class="custom-type-toggle custom-marks-toggle" data-type="short" data-marks="{{ marks }}">
+                    {{ marks }} mark{{ 's' if marks != 1 else '' }}
+                </label>
+                <span class="custom-type-count" data-type-count="short-{{ marks }}" hidden>
+                    <input type="number" min="1" max="20" value="2" aria-label="Number of {{ marks }}-mark short answer questions">
+                    questions
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="custom-marks-section">
+            <div class="custom-marks-section-head">
+                <span>Long Answer Questions</span>
+                <span class="muted">Total: <strong data-marks-section-total="long">0</strong></span>
+            </div>
+            {% for marks in (4, 5, 6, 7, 10) %}
+            <div class="custom-type-row custom-marks-row">
+                <label class="custom-type-check">
+                    <input type="checkbox" class="custom-type-toggle custom-marks-toggle" data-type="long" data-marks="{{ marks }}">
+                    {{ marks }} marks
+                </label>
+                <span class="custom-type-count" data-type-count="long-{{ marks }}" hidden>
+                    <input type="number" min="1" max="20" value="1" aria-label="Number of {{ marks }}-mark long answer questions">
+                    questions
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+
+        <p class="helper">Total questions: <strong id="custom-total-count">0</strong> (up to 40 per paper)</p>
+    </div>
+
+    <div class="field">
+        <label class="custom-type-check">
+            <input type="checkbox" id="custom-include-or">
+            Include OR alternatives
+        </label>
+        <p class="helper">Like a real exam paper -- a couple of short-answer questions and a couple of long-answer questions each get an equal-weight "OR" alternative you can answer instead, not every question. Doesn't apply to Multiple Choice.</p>
+    </div>
+
+    <div class="field">
+        <label for="custom-difficulty">Difficulty</label>
+        <select id="custom-difficulty">
+            <option value="easy">Easy</option>
+            <option value="medium" selected>Medium</option>
+            <option value="hard">Hard</option>
+        </select>
+    </div>
+
+    <div class="field">
+        <label for="custom-duration">Time allowed</label>
+        <select id="custom-duration">
+            <option value="30">30 minutes</option>
+            <option value="45">45 minutes</option>
+            <option value="60" selected>1 hour</option>
+            <option value="90">1 hour 30 minutes</option>
+            <option value="120">2 hours</option>
+            <option value="180">3 hours</option>
+        </select>
+        <p class="helper">Printed on the paper like a real exam -- doesn't change how many questions are generated, but paces how in-depth they are.</p>
+    </div>
+
+    <div class="field">
+        <label for="custom-theory-percent">Theory vs practical</label>
+        <select id="custom-theory-percent">
+            <option value="80">80% Theory / 20% Practical</option>
+            <option value="70">70% Theory / 30% Practical</option>
+            <option value="60">60% Theory / 40% Practical</option>
+            <option value="50" selected>50% Theory / 50% Practical</option>
+            <option value="40">40% Theory / 60% Practical</option>
+            <option value="30">30% Theory / 70% Practical</option>
+            <option value="20">20% Theory / 80% Practical</option>
+        </select>
+        <p class="helper">"Practical" means numerical-calculation and coding questions combined, split per topic as usual.</p>
+    </div>
+
+    <div class="cta-row">
+        <button type="button" id="custom-paper-back" class="btn btn-secondary">
+            <i data-lucide="arrow-left"></i>
+            Go Back
+        </button>
+        <button type="button" id="custom-paper-generate" class="btn btn-primary">
+            Generate &amp; Download PDF
+            <i data-lucide="download"></i>
+        </button>
+    </div>
+</div>
+{% endblock %}

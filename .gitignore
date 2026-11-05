@@ -1,0 +1,20 @@
+# Secrets - never commit these
+.env
+credentials.json
+token.json
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Databases (local runtime data)
+*.db
+
+# Generated/runtime output
+daily_pdfs/
+logs/
+Claude outputs/
+
+# Editor
+.vscode/

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Custom Notes · Solvestreak{% endblock %}
+{% block page_title %}Custom Notes{% endblock %}
+{% block page_subtitle %}Organized into subject folders{% endblock %}
+
+{% block header_actions %}
+<a class="btn btn-secondary btn-sm" href="/history">
+    <i data-lucide="arrow-left"></i>
+    Back to History
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="history-box-grid">
+    <a class="card folder-card" href="/history/custom-notes/uncategorized">
+        <div class="history-box-icon"><i data-lucide="inbox"></i></div>
+        <h3>Uncategorized</h3>
+        <p class="muted">{{ uncategorized_count }} note{{ "s" if uncategorized_count != 1 else "" }}</p>
+    </a>
+
+    {% for folder in folders %}
+    <div class="card folder-card" data-folder-id="{{ folder.id }}">
+        <div class="folder-card-view">
+            <div class="history-box-icon"><i data-lucide="folder"></i></div>
+            <h3 class="folder-name">{{ folder.name }}</h3>
+            <p class="muted">{{ folder.note_count }} note{{ "s" if folder.note_count != 1 else "" }}</p>
+            <div class="cta-row">
+                <a class="btn btn-primary btn-sm" href="/history/custom-notes/folder/{{ folder.id }}">
+                    Open
+                    <i data-lucide="arrow-right"></i>
+                </a>
+                <button type="button" class="btn btn-ghost btn-sm folder-rename-btn">
+                    <i data-lucide="pencil"></i>
+                    Rename
+                </button>
+            </div>
+        </div>
+        <form class="folder-card-edit" action="/history/custom-notes/folders/{{ folder.id }}/rename" method="post" hidden>
+            <div class="field">
+                <label class="sr-only" for="rename-{{ folder.id }}">Folder name</label>
+                <input type="text" id="rename-{{ folder.id }}" name="name" value="{{ folder.name }}" maxlength="60" required>
+            </div>
+            <div class="cta-row">
+                <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                <button type="button" class="btn btn-ghost btn-sm folder-cancel-btn">Cancel</button>
+            </div>
+        </form>
+    </div>
+    {% endfor %}
+
+    <form class="card form-card new-folder-card" action="/history/custom-notes/folders" method="post">
+        <div class="history-box-icon"><i data-lucide="folder-plus"></i></div>
+        <div class="field">
+            <label for="new-folder-name">New subject folder</label>
+            <input type="text" id="new-folder-name" name="name" placeholder="e.g. Microprocessors" maxlength="60" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm">
+            <i data-lucide="plus"></i>
+            Create Folder
+        </button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}History · Solvestreak{% endblock %}
+{% block page_title %}History{% endblock %}
+{% block page_subtitle %}Past study sessions{% endblock %}
+
+{% block content %}
+<div class="history-box-grid">
+    <a class="card history-box" href="/history/papers">
+        <div class="history-box-icon"><i data-lucide="file-text"></i></div>
+        <h3>Practice Papers</h3>
+        <p class="muted">Every practice paper you've generated.</p>
+        <span class="badge">{{ papers_count }} saved</span>
+    </a>
+
+    <a class="card history-box" href="/history/solutions">
+        <div class="history-box-icon"><i data-lucide="check-circle"></i></div>
+        <h3>Solutions</h3>
+        <p class="muted">Every solutions set you've generated.</p>
+        <span class="badge">{{ solutions_count }} saved</span>
+    </a>
+
+    <a class="card history-box" href="/history/notes">
+        <div class="history-box-icon"><i data-lucide="book-open"></i></div>
+        <h3>Coding Notes</h3>
+        <p class="muted">Your daily auto-generated topic notes, added to every day.</p>
+        <span class="badge">{{ coding_notes_count }} saved</span>
+    </a>
+
+    <a class="card history-box" href="/history/custom-notes">
+        <div class="history-box-icon"><i data-lucide="folder"></i></div>
+        <h3>Custom Notes</h3>
+        <p class="muted">Your own topic notes, organized into subject folders.</p>
+        <span class="badge">{{ custom_notes_count }} saved</span>
+    </a>
+
+    <a class="card history-box" href="/history/custom-papers">
+        <div class="history-box-icon"><i data-lucide="sliders-horizontal"></i></div>
+        <h3>Custom Papers</h3>
+        <p class="muted">Every custom-topic practice paper you've generated.</p>
+        <span class="badge">{{ custom_papers_count }} saved</span>
+    </a>
+</div>
+{% endblock %}
